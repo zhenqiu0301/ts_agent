@@ -1,0 +1,433 @@
+2026-04-08 14:12:32,243 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 14:12:32,243 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | Nihau
+2026-04-08 14:13:41,034 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-08 14:13:41,035 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我是ts，给我推荐大户型适合的款式
+2026-04-08 14:13:43,818 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 14:13:43,818 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '大户型 扫地机器人 推荐 款式'}
+2026-04-08 14:13:46,816 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 14:13:46,818 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-08 14:13:46,818 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 大户型推荐选择支持分区清扫、断点续扫功能的扫地机器人，优先采用激光导航以适应复杂户型，并确保吸力≥3000Pa，续航充足，便于分批次完成全屋清洁。
+2026-04-08 14:14:20,078 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-08 14:14:20,080 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我叫什么
+2026-04-08 14:46:06,862 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 14:46:06,862 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我家120平有宠物，想买台适合的扫拖机器人
+2026-04-08 14:46:08,944 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 14:46:08,945 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '120平大户型有宠物家庭扫拖机器人选购指南'}
+2026-04-08 14:46:09,711 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 14:46:09,712 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我家120平有宠物，想买台适合的扫拖机器人
+2026-04-08 14:46:13,321 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 14:46:13,321 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-08 14:46:13,322 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 120平大户型有宠物家庭应选择吸力≥3000Pa、支持吸力调节的扫拖一体机器人，优先采用激光导航以适应复杂户型；需配备防缠绕主刷和高密度滤网，开启“宠物模式”提升清扫频次与吸力；建议使用分区清扫策略，配合断点续扫功能应对大户型续航需求，并每日清理尘盒与滚刷。
+2026-04-08 15:45:43,043 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 15:45:43,043 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我家120平有宠物，想买台适合的扫拖机器人
+2026-04-08 22:15:45,784 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 22:15:45,784 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我家120平有宠物，想买台适合的扫拖机器人
+2026-04-08 22:15:48,911 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 22:15:48,912 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '120平大户型有宠物家庭 扫拖机器人选购指南'}
+2026-04-08 22:15:53,622 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 22:15:53,624 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-08 22:15:53,625 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 120平大户型有宠物家庭选购扫拖机器人时，应优先选择吸力≥3000Pa、支持吸力调节的机型，并配备防缠绕主刷和高密度滤网；建议开启“宠物模式”以提升清扫频次和吸力，每日清理尘盒与滚刷；针对大户型，宜采用激光导航以确保复杂环境下的精准定位，并支持分区清扫与断点续扫功能，保障续航不足时可自动回充后继续作业。
+2026-04-08 22:17:02,553 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 22:17:02,554 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我家120平有宠物，想买台适合的扫拖机器人
+2026-04-08 22:17:52,930 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-08 22:17:52,930 - agent - DEBUG - middleware.py:62 - [log_before_model]HumanMessage | 我家120平有宠物，想买台适合的扫拖机器人
+2026-04-08 22:17:55,251 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 22:17:55,252 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '120平大户型有宠物家庭扫拖机器人选购指南'}
+2026-04-08 22:17:55,719 - agent - ERROR - tools.py:55 - [rag_summarize]调用DashScope时发生网络异常: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 773, in urlopen
+    self._prepare_proxy(conn)
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 1042, in _prepare_proxy
+    conn.connect()
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+               ^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 483, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 527, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 517, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1108, in _create
+    self.do_handshake()
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1383, in do_handshake
+    self._sslobj.do_handshake()
+ConnectionResetError: [Errno 54] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/adapters.py", line 645, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 773, in urlopen
+    self._prepare_proxy(conn)
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 1042, in _prepare_proxy
+    conn.connect()
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+               ^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 483, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 527, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 517, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1108, in _create
+    self.do_handshake()
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1383, in do_handshake
+    self._sslobj.do_handshake()
+urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/tools/tools.py", line 47, in rag_summarize
+    return rag.rag_summarize(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 55, in rag_summarize
+    return self.chain.invoke(
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/runnables/base.py", line 3157, in invoke
+    input_ = context.run(step.invoke, input_, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 454, in invoke
+    self.generate_prompt(
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1185, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 995, in generate
+    self._generate_with_cache(
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1297, in _generate_with_cache
+    result = self._generate(
+             ^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 669, in _generate
+    resp = self.completion_with_retry(**params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 540, in completion_with_retry
+    return _completion_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 331, in wrapped_f
+    return copy(f, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 537, in _completion_with_retry
+    resp = self.client.call(**_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/aigc/generation.py", line 181, in call
+    response = super().call(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/client/base_api.py", line 515, in call
+    return request.call()
+           ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 143, in call
+    output = next(response)
+             ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 501, in _handle_request
+    raise e
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 475, in _handle_request
+    response = session.post(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 640, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 592, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 706, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/adapters.py", line 660, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+2026-04-08 22:17:55,733 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 22:17:55,734 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-08 22:17:55,734 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 当前无法连接模型服务（网络异常）。请检查网络环境后重试。
+2026-04-08 22:17:57,918 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 22:17:57,919 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '大户型宠物家庭扫拖机器人推荐'}
+2026-04-08 22:18:06,555 - agent - ERROR - tools.py:55 - [rag_summarize]调用DashScope时发生网络异常: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 773, in urlopen
+    self._prepare_proxy(conn)
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 1042, in _prepare_proxy
+    conn.connect()
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+               ^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 483, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 527, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 517, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1108, in _create
+    self.do_handshake()
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1383, in do_handshake
+    self._sslobj.do_handshake()
+ConnectionResetError: [Errno 54] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/adapters.py", line 645, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 773, in urlopen
+    self._prepare_proxy(conn)
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 1042, in _prepare_proxy
+    conn.connect()
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+               ^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 483, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/ssl_.py", line 527, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 517, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1108, in _create
+    self.do_handshake()
+  File "/opt/anaconda3/lib/python3.11/ssl.py", line 1383, in do_handshake
+    self._sslobj.do_handshake()
+urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/tools/tools.py", line 47, in rag_summarize
+    return rag.rag_summarize(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 55, in rag_summarize
+    return self.chain.invoke(
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/runnables/base.py", line 3157, in invoke
+    input_ = context.run(step.invoke, input_, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 454, in invoke
+    self.generate_prompt(
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1185, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 995, in generate
+    self._generate_with_cache(
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1297, in _generate_with_cache
+    result = self._generate(
+             ^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 669, in _generate
+    resp = self.completion_with_retry(**params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 540, in completion_with_retry
+    return _completion_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 331, in wrapped_f
+    return copy(f, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 537, in _completion_with_retry
+    resp = self.client.call(**_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/aigc/generation.py", line 181, in call
+    response = super().call(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/client/base_api.py", line 515, in call
+    return request.call()
+           ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 143, in call
+    output = next(response)
+             ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 501, in _handle_request
+    raise e
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 475, in _handle_request
+    response = session.post(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 640, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 592, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 706, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/adapters.py", line 660, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))
+2026-04-08 22:18:06,562 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 22:18:06,563 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-08 22:18:06,563 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 当前无法连接模型服务（网络异常）。请检查网络环境后重试。
+2026-04-08 22:18:09,106 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 22:18:09,107 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '宠物家庭适用扫地机器人选购要点'}
+2026-04-08 22:18:40,424 - agent - ERROR - tools.py:50 - [rag_summarize]调用DashScope时发生SSL异常: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/aigc/text-generation/generation (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1006)')))
+urllib3.exceptions.SSLError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1006)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/adapters.py", line 645, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/urllib3/util/retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/aigc/text-generation/generation (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1006)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/tools/tools.py", line 47, in rag_summarize
+    return rag.rag_summarize(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 55, in rag_summarize
+    return self.chain.invoke(
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/runnables/base.py", line 3157, in invoke
+    input_ = context.run(step.invoke, input_, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 454, in invoke
+    self.generate_prompt(
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1185, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 995, in generate
+    self._generate_with_cache(
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1297, in _generate_with_cache
+    result = self._generate(
+             ^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 669, in _generate
+    resp = self.completion_with_retry(**params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 540, in completion_with_retry
+    return _completion_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 331, in wrapped_f
+    return copy(f, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/langchain_community/chat_models/tongyi.py", line 537, in _completion_with_retry
+    resp = self.client.call(**_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/aigc/generation.py", line 181, in call
+    response = super().call(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/client/base_api.py", line 515, in call
+    return request.call()
+           ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 143, in call
+    output = next(response)
+             ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 501, in _handle_request
+    raise e
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/dashscope/api_entities/http_request.py", line 475, in _handle_request
+    response = session.post(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 640, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 592, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/sessions.py", line 706, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.11/site-packages/requests/adapters.py", line 676, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/aigc/text-generation/generation (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1006)')))
+2026-04-08 22:18:40,428 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 22:18:40,429 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-08 22:18:40,429 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 当前与模型服务的安全连接失败（SSL）。请检查网络代理/VPN、系统证书或稍后重试。
+2026-04-08 22:18:42,929 - agent - INFO - middleware.py:39 - [tool monitor]执行工具：rag_summarize
+2026-04-08 22:18:42,929 - agent - INFO - middleware.py:40 - [tool monitor]传入参数：{'query': '扫拖一体机宠物毛发清理能力'}
+2026-04-08 22:18:46,513 - agent - INFO - middleware.py:44 - [tool monitor]工具rag_summarize调用成功
+2026-04-08 22:18:46,516 - agent - INFO - middleware.py:60 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-08 22:18:46,516 - agent - DEBUG - middleware.py:62 - [log_before_model]ToolMessage | 扫拖一体机清理宠物毛发需具备≥3000Pa吸力，建议选择强化吸力和防缠绕功能的机型；部分机型支持在APP中手动调高吸力以增强清扫效果，干拖模式可有效清理浮尘和毛发。

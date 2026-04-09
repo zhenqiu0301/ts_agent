@@ -1,0 +1,298 @@
+2026-04-06 13:46:12,576 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 13:46:12,576 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好，帮我讲解一下功能
+2026-04-06 13:56:16,506 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 13:56:16,506 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好，帮我讲解一下功能
+2026-04-06 14:02:53,192 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 14:02:53,193 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好
+2026-04-06 15:23:30,469 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 15:23:30,469 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 查询使用报告
+2026-04-06 15:23:33,329 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fill_context_for_report
+2026-04-06 15:23:33,330 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:23:33,332 - agent - INFO - middleware.py:29 - [tool monitor]工具fill_context_for_report调用成功
+2026-04-06 15:23:33,333 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 15:23:33,333 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | fill_context_for_report已调用
+2026-04-06 15:23:34,321 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_user_id
+2026-04-06 15:23:34,321 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:23:34,322 - agent - INFO - middleware.py:29 - [tool monitor]工具get_user_id调用成功
+2026-04-06 15:23:34,322 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-06 15:23:34,322 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 1010
+2026-04-06 15:23:37,106 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_current_month
+2026-04-06 15:23:37,107 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:23:37,107 - agent - INFO - middleware.py:29 - [tool monitor]工具get_current_month调用成功
+2026-04-06 15:23:37,107 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-06 15:23:37,107 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 2025-06
+2026-04-06 15:23:39,183 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fetch_external_data
+2026-04-06 15:23:39,184 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'user_id': '1010', 'month': '2025-06'}
+2026-04-06 15:23:39,186 - agent - INFO - middleware.py:29 - [tool monitor]工具fetch_external_data调用成功
+2026-04-06 15:23:39,188 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-06 15:23:39,188 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | {"特征": "130㎡四居 | 三代同堂 | 通体砖", "效率": "覆盖率:82%\\n手动辅助清扫:3次/天\\n定时清扫使用率:60%", "耗材": "电池衰减:15%\\n边刷寿命:剩余45天", "对比": "大户型中操作便捷性低于同类20%"}
+2026-04-06 15:23:41,994 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:23:41,994 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型扫地机器人使用建议 边刷更换周期'}
+2026-04-06 15:23:43,791 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:23:43,791 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-06 15:23:43,791 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 参考资料中未提及大户型扫地机器人的边刷更换周期。
+2026-04-06 15:23:45,846 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:23:45,846 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '扫地机器人边刷更换周期'}
+2026-04-06 15:23:48,386 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:23:48,387 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有13条消息。
+2026-04-06 15:23:48,387 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 边刷磨损至刷毛长度小于1厘米时应立即更换，以避免影响边角清扫效果；日常使用中若出现磨损、变形也需及时更换。
+2026-04-06 15:23:51,235 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:23:51,235 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型扫地机器人使用建议'}
+2026-04-06 15:23:53,636 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:23:53,637 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有15条消息。
+2026-04-06 15:23:53,637 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型房屋应采用“分区清扫”，分批次清扫不同区域；若机器人续航不足，需设置“断点续扫”功能，使其完成后自动回充。
+2026-04-06 15:25:49,823 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 15:25:49,823 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 给我使用报告
+2026-04-06 15:25:55,407 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fill_context_for_report
+2026-04-06 15:25:55,408 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:25:55,409 - agent - INFO - middleware.py:29 - [tool monitor]工具fill_context_for_report调用成功
+2026-04-06 15:25:55,410 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 15:25:55,411 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | fill_context_for_report已调用
+2026-04-06 15:25:57,275 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_user_id
+2026-04-06 15:25:57,276 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:25:57,277 - agent - INFO - middleware.py:29 - [tool monitor]工具get_user_id调用成功
+2026-04-06 15:25:57,278 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-06 15:25:57,278 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 1003
+2026-04-06 15:25:58,545 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_current_month
+2026-04-06 15:25:58,545 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:25:58,546 - agent - INFO - middleware.py:29 - [tool monitor]工具get_current_month调用成功
+2026-04-06 15:25:58,546 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-06 15:25:58,546 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 2025-12
+2026-04-06 15:26:02,053 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fetch_external_data
+2026-04-06 15:26:02,053 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'user_id': '1003', 'month': '2025-12'}
+2026-04-06 15:26:02,055 - agent - INFO - middleware.py:29 - [tool monitor]工具fetch_external_data调用成功
+2026-04-06 15:26:02,055 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-06 15:26:02,055 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | {"特征": "90㎡ | 1狗 | 短毛地毯", "效率": "毛发清理:95%\\n地毯增压使用:20次/月", "耗材": "胶刷寿命:剩余30天\\n尘盒清理:每2天", "对比": "毛发处理效率前5%"}
+2026-04-06 15:26:05,262 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:26:05,263 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '扫地机器人胶刷更换周期和毛发清理技巧'}
+2026-04-06 15:26:11,682 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:26:11,684 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-06 15:26:11,684 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 扫地机器人胶刷（滚刷胶条）一般与主刷同步更换，出现磨损、开裂或脱落时应立即更换。在宠物家庭等毛发较多的环境中，建议每次清扫后全面清理主刷，并将耗材更换周期缩短50%。日常使用中，每周需清理主刷上的毛发，每月用清水冲洗一次。
+2026-04-06 15:26:12,128 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 15:26:12,128 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 2025-021002
+2026-04-06 15:26:23,482 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 15:26:23,483 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 2025-02 1002
+2026-04-06 15:27:05,123 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 15:27:05,124 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 生成用户1002在2025年2月的使用报告
+2026-04-06 15:27:09,130 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fill_context_for_report
+2026-04-06 15:27:09,130 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 15:27:09,132 - agent - INFO - middleware.py:29 - [tool monitor]工具fill_context_for_report调用成功
+2026-04-06 15:27:09,133 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 15:27:09,133 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | fill_context_for_report已调用
+2026-04-06 15:27:12,871 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fetch_external_data
+2026-04-06 15:27:12,872 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'user_id': '1002', 'month': '2025-02'}
+2026-04-06 15:27:12,873 - agent - INFO - middleware.py:29 - [tool monitor]工具fetch_external_data调用成功
+2026-04-06 15:27:12,874 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-06 15:27:12,874 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | {"特征": "70㎡公寓 | 情侣 | 瓷砖", "效率": "覆盖率:87%\\n避障失败:3次/周（电线缠绕）", "耗材": "边刷磨损:中度+\\n尘盒清理:每2天", "对比": "拖地功能使用率低于同类32%"}
+2026-04-06 15:27:15,606 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:27:15,607 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '边刷磨损保养建议'}
+2026-04-06 15:27:27,167 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:27:27,168 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-06 15:27:27,169 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 边刷磨损会导致边角清扫不彻底，应拆卸机身底部边刷卡扣进行更换，按压卡紧即可；若安装后松动或旋转晃动，需检查卡扣是否断裂、是否安装到位，并使用原装边刷；若边刷旋转时与机身摩擦产生异响，应调整安装松紧度、更换变形边刷或清理机身杂物。
+2026-04-06 15:27:29,260 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:27:29,261 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '拖地功能使用率低的原因及建议'}
+2026-04-06 15:27:33,421 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:27:33,422 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-06 15:27:33,423 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 拖地功能使用率低可能与门槛跨越后自动关闭、不同地面清洁参数未优化、拖布掉毛影响体验等因素有关。建议开启“越障后恢复拖地”功能（如机型支持），在APP中设置分区清扫以适配不同地面类型，更换无尘拖布并正确预处理，以及对床底、沙发底等区域设置“深度拖扫”提升清洁效果。
+2026-04-06 15:27:35,242 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 15:27:35,242 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '电线缠绕避障解决方案'}
+2026-04-06 15:27:39,106 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 15:27:39,107 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-06 15:27:39,107 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 针对电线缠绕避障问题，解决方案包括：清理地面散落的电线，开启机器人的防缠绕功能，并在发生缠绕时进行手动辅助脱离。
+2026-04-06 17:06:55,717 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 17:06:55,717 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 给我生成我的使用报告
+2026-04-06 17:06:58,500 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_user_id
+2026-04-06 17:06:58,500 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 17:06:58,501 - agent - INFO - middleware.py:29 - [tool monitor]工具get_user_id调用成功
+2026-04-06 17:06:58,502 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 17:06:58,502 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 1002
+2026-04-06 17:06:59,875 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_current_month
+2026-04-06 17:06:59,875 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 17:06:59,875 - agent - INFO - middleware.py:29 - [tool monitor]工具get_current_month调用成功
+2026-04-06 17:06:59,875 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-06 17:06:59,875 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 2025-10
+2026-04-06 17:07:04,352 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fill_context_for_report
+2026-04-06 17:07:04,352 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 17:07:04,352 - agent - INFO - middleware.py:29 - [tool monitor]工具fill_context_for_report调用成功
+2026-04-06 17:07:04,352 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-06 17:07:04,353 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | fill_context_for_report已调用
+2026-04-06 17:07:25,016 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 17:07:25,016 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 给我生成我的使用报告
+2026-04-06 17:07:27,326 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_user_id
+2026-04-06 17:07:27,326 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 17:07:27,327 - agent - INFO - middleware.py:29 - [tool monitor]工具get_user_id调用成功
+2026-04-06 17:07:27,327 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 17:07:27,327 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 1003
+2026-04-06 17:07:29,004 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：get_current_month
+2026-04-06 17:07:29,004 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 17:07:29,005 - agent - INFO - middleware.py:29 - [tool monitor]工具get_current_month调用成功
+2026-04-06 17:07:29,005 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-06 17:07:29,005 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 2025-11
+2026-04-06 17:07:30,918 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fill_context_for_report
+2026-04-06 17:07:30,918 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{}
+2026-04-06 17:07:30,919 - agent - INFO - middleware.py:29 - [tool monitor]工具fill_context_for_report调用成功
+2026-04-06 17:07:30,920 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-06 17:07:30,920 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | fill_context_for_report已调用
+2026-04-06 17:07:51,931 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：fetch_external_data
+2026-04-06 17:07:51,932 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'user_id': '1003', 'month': '2025-11'}
+2026-04-06 17:07:51,935 - agent - INFO - middleware.py:29 - [tool monitor]工具fetch_external_data调用成功
+2026-04-06 17:07:51,936 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-06 17:07:51,936 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | {"特征": "90㎡ | 1狗 | 短毛地毯", "效率": "毛发清理:94%\\n地毯增压使用:18次/月", "耗材": "胶刷寿命:剩余35天\\n尘盒清理:每2天", "对比": "毛发处理效率前10%"}
+2026-04-06 17:07:53,779 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 17:07:53,779 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '宠物家庭扫地机器人保养建议'}
+2026-04-06 17:08:24,044 - agent - ERROR - agent_tools.py:47 - [rag_summarize]调用DashScope时发生SSL异常: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/embeddings/text-embedding/text-embedding (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+urllib3.exceptions.SSLError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/adapters.py", line 645, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/embeddings/text-embedding/text-embedding (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/agent/tools/agent_tools.py", line 45, in rag_summarize
+    return rag.rag_summarize(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 47, in rag_summarize
+    context_docs = self.retriever_docs(query)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 43, in retriever_docs
+    return self.retriever.invoke(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_core/retrievers.py", line 222, in invoke
+    result = self._get_relevant_documents(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_core/vectorstores/base.py", line 1045, in _get_relevant_documents
+    docs = self.vectorstore.similarity_search(query, **kwargs_)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_chroma/vectorstores.py", line 748, in similarity_search
+    docs_and_scores = self.similarity_search_with_score(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_chroma/vectorstores.py", line 848, in similarity_search_with_score
+    query_embedding = self._embedding_function.embed_query(query)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_community/embeddings/dashscope.py", line 170, in embed_query
+    embedding = embed_with_retry(
+                ^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_community/embeddings/dashscope.py", line 83, in embed_with_retry
+    return _embed_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 331, in wrapped_f
+    return copy(f, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_community/embeddings/dashscope.py", line 66, in _embed_with_retry
+    resp = embeddings.client.call(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/embeddings/text_embedding.py", line 52, in call
+    return super().call(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/client/base_api.py", line 515, in call
+    return request.call()
+           ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/api_entities/http_request.py", line 143, in call
+    output = next(response)
+             ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/api_entities/http_request.py", line 501, in _handle_request
+    raise e
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/api_entities/http_request.py", line 475, in _handle_request
+    response = session.post(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/sessions.py", line 640, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/sessions.py", line 592, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/sessions.py", line 706, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/adapters.py", line 676, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/embeddings/text-embedding/text-embedding (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+2026-04-06 17:08:24,059 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 17:08:24,060 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-06 17:08:24,060 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 当前与模型服务的安全连接失败（SSL）。请检查网络代理/VPN、系统证书或稍后重试。
+2026-04-06 18:04:19,704 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:04:19,704 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:04:21,347 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:04:21,348 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型适合的扫地机器人选购指南'}
+2026-04-06 18:04:26,177 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:04:26,178 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:04:26,179 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型选购扫地机器人应重点关注大电池（>5200mAh）、自动集尘或自动洗拖布功能；导航建议选择激光导航，定位精准且适合复杂户型；吸力建议≥3000Pa，若含地毯则需≥4000Pa并具备地毯识别与自动增压功能；同时需关注尘盒和水箱容量。
+2026-04-06 18:16:30,001 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:16:30,001 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你好
+2026-04-06 18:20:20,865 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:20:20,866 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:21:53,824 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:21:53,824 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:21:56,170 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:21:56,170 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型适合的扫地机器人选购指南'}
+2026-04-06 18:22:03,018 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:22:03,019 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:22:03,019 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型选购扫地机器人应重点关注以下要素：选择电池容量大于5200mAh的机型，以保障续航；优先考虑具备自动集尘或自动洗拖布功能的型号，减少人工干预；导航方面推荐激光导航，定位精准且适合复杂户型；吸力建议≥3000Pa，若家中有地毯则需≥4000Pa并支持自动增压；同时可关注尘盒和水箱容量，以适应大面积清洁需求。
+2026-04-06 18:33:11,569 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:33:11,570 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:33:13,900 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:33:13,900 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型 扫地机器人 选购指南'}
+2026-04-06 18:33:37,670 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:33:37,672 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:33:37,673 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型选购扫地机器人应重点关注以下几点：选择电池容量大于5200mAh的机型以保障续航；优先考虑具备自动集尘或自动洗拖布功能的产品，减少人工干预；采用激光导航技术以提升复杂户型中的定位与路径规划能力；支持分区清扫和断点续扫功能，便于高效完成大面积清洁任务。
+2026-04-06 18:37:46,161 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:37:46,161 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | tools/agent_tools.py
+2026-04-06 18:37:51,759 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:37:51,760 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | tools/agent_tools.py
+2026-04-06 18:37:57,095 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:37:57,098 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:37:58,770 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:37:58,770 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型适合的扫地机器人选购指南'}
+2026-04-06 18:38:02,360 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:38:02,361 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:38:02,361 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型适合选择电池容量大于5200mAh、具备自动集尘或自动洗拖布功能的扫地机器人，同时建议采用激光导航以提升复杂环境下的定位精度，并根据地面类型选择合适吸力（如地毯需≥4000Pa）。
+2026-04-06 18:39:41,393 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:39:41,393 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:39:44,930 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:39:44,931 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型适合的扫地机器人选购指南'}
+2026-04-06 18:39:50,186 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:39:50,187 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:39:50,187 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型适合的扫地机器人应具备以下特点：选择电池容量大于5200mAh的机型，以保障续航；优先考虑支持自动集尘或自动洗拖布功能的型号，减少人工干预；导航方面推荐激光导航，定位精准且适应复杂户型；吸力建议≥3000Pa，若家中有地毯则需≥4000Pa并具备地毯识别与自动增压功能；同时可关注尘盒和水箱容量，确保清洁效率。
+2026-04-06 18:41:16,069 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:41:16,069 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪些扫地机器人
+2026-04-06 18:41:17,652 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:41:17,653 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型适合的扫地机器人选购指南'}
+2026-04-06 18:41:32,708 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:41:32,709 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:41:32,709 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型选购扫地机器人应重点关注以下几点：选择电池容量大于5200mAh的机型以保障续航；优先考虑具备自动集尘或自动洗拖布功能的型号，减少人工干预；导航方面推荐激光导航，定位精准且适合复杂户型；吸力建议≥3000Pa，若家中有地毯则需≥4000Pa并具备地毯识别与自动增压功能；同时可关注尘盒和水箱容量，确保大面积清洁效率。
+2026-04-06 18:59:49,734 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-06 18:59:49,735 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 小户型适合什么款式
+2026-04-06 18:59:52,375 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-06 18:59:52,376 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '小户型扫地机器人款式推荐'}
+2026-04-06 18:59:56,339 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-06 18:59:56,341 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-06 18:59:56,341 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 小户型推荐选择基础激光导航机型，如米家 1C、石头 T4；优先考虑机身高度≤7.5cm以适应低矮空间，吸力≥3000Pa，配备可调节吸力和HEPA H13级滤网更佳；若家中有宠物或长发人群，建议选用防缠绕主刷设计。

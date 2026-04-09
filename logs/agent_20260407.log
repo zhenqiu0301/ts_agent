@@ -1,0 +1,208 @@
+2026-04-07 15:51:33,047 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-07 15:51:33,047 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合哪一款
+2026-04-07 15:51:35,069 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-07 15:51:35,069 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型 扫地机器人 选购指南'}
+2026-04-07 15:51:51,860 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 15:51:51,863 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-07 15:51:51,863 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型选购扫地机器人应关注大电池（>5200mAh）、自动集尘或自动洗拖布功能，并采用分区清扫策略；若续航不足，需支持断点续扫。导航方面，激光导航定位精准、抗干扰强，适合复杂户型；吸力建议≥3000Pa，可调节更佳。
+2026-04-07 16:23:23,251 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-07 16:23:23,252 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我是ts，给我讲讲大户型适合的款式
+2026-04-07 16:23:25,031 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-07 16:23:25,031 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型 扫地机器人 款式推荐'}
+2026-04-07 16:23:30,468 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 16:23:30,471 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-07 16:23:30,471 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型推荐选择支持分区清扫、断点续扫功能的扫地机器人，优先采用激光导航以适应复杂户型，并确保吸力≥3000Pa，若含地毯则建议≥4000Pa；可通过APP设置深度拖扫区域，提升清洁效果。
+2026-04-07 16:24:18,897 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-07 16:24:18,897 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 还记得我是谁吗，我刚问了什么？
+2026-04-07 16:29:42,164 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-07 16:29:42,164 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我是ts
+2026-04-07 16:29:58,522 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-07 16:29:58,523 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 给我讲讲小户型的适合款式
+2026-04-07 16:30:00,209 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-07 16:30:00,209 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '小户型扫地机器人推荐款式'}
+2026-04-07 16:30:12,606 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 16:30:12,607 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-07 16:30:12,607 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 小户型适合选择基础激光导航机型，如米家1C、石头T4；建议吸力≥3000Pa，机身高度≤7.5cm以进入低矮空间，优先考虑轻便灵活设计。
+2026-04-07 16:30:44,690 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-07 16:30:44,693 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 你还记得我叫什么吗
+2026-04-07 16:31:19,152 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-07 16:31:19,154 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 我问你的第一个问题是什么
+2026-04-07 16:32:01,183 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-07 16:32:01,184 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大户型适合什么款式呢
+2026-04-07 16:32:05,214 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-07 16:32:05,214 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '大户型扫地机器人推荐款式'}
+2026-04-07 16:32:07,297 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 16:32:07,298 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有13条消息。
+2026-04-07 16:32:07,298 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 大户型扫地机器人推荐选择具备激光导航、吸力≥3000Pa、支持分区清扫和断点续扫功能的机型，以适配复杂户型与长续航需求。
+2026-04-07 16:33:15,057 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有15条消息。
+2026-04-07 16:33:15,059 - agent - DEBUG - middleware.py:47 - [log_before_model]HumanMessage | 大小户型适合款式的区别
+2026-04-07 16:33:24,347 - agent - INFO - middleware.py:24 - [tool monitor]执行工具：rag_summarize
+2026-04-07 16:33:24,347 - agent - INFO - middleware.py:25 - [tool monitor]传入参数：{'query': '小户型和大户型扫地机器人款式选择区别'}
+2026-04-07 16:33:28,932 - agent - INFO - middleware.py:29 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 16:33:28,938 - agent - INFO - middleware.py:45 - [log_before_model]即将调用模型，带有17条消息。
+2026-04-07 16:33:28,938 - agent - DEBUG - middleware.py:47 - [log_before_model]ToolMessage | 小户型适合选择基础激光导航机型，如米家1C、石头T4，侧重轻便灵活；大户型需关注大电池（>5200mAh）、自动集尘或自动洗拖布功能。
+2026-04-07 17:39:29,738 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有1条消息。
+2026-04-07 17:39:29,738 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 你好
+2026-04-07 17:39:37,499 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有3条消息。
+2026-04-07 17:39:37,500 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 我叫ts
+2026-04-07 17:39:54,892 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有5条消息。
+2026-04-07 17:39:54,893 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 帮我介绍一下你家的产品
+2026-04-07 17:39:56,793 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:39:56,793 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '扫地机器人和扫拖一体机产品介绍 选购指南 核心功能'}
+2026-04-07 17:40:04,591 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:40:04,595 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-07 17:40:04,595 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 扫地机器人和扫拖一体机选购需根据使用场景选择，如独居小户型注重轻便灵活，多口之家或养宠家庭需高吸力（≥3000Pa，地毯建议≥4000Pa）和防缠绕功能。导航方面，激光导航精准抗干扰，适合复杂户型；视觉导航性价比高但应避免强光环境。扫拖一体机支持单独扫地或设置先扫后拖流程，可通过APP关闭拖地功能或自定义清洁模式。建议现场试用测试导航、避障、吸力及拖地效果，并参考真实用户对续航、避障和售后的评价。预算3000元内可选激光导航+旋转拖布基础款，5000元以上可考虑带自动集尘和热风烘干功能机型。
+2026-04-07 17:40:56,861 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-07 17:40:56,863 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 我家是大户型，有啥推荐的吗，平常有养宠物
+2026-04-07 17:40:59,089 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:40:59,089 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '大户型养宠家庭 扫地机器人推荐 高吸力防缠绕 自动集尘 热风烘干'}
+2026-04-07 17:41:03,524 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:41:03,525 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-07 17:41:03,526 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 大户型养宠家庭应选择吸力≥3000Pa、具备胶刷设计以防毛发缠绕、支持自动集尘和热风烘干功能的扫地机器人；优先考虑激光导航以适应复杂户型，并确保尘盒容量足够。
+2026-04-07 17:45:15,065 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-07 17:45:15,067 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 针对我在的城市的气候有啥推荐的吗
+2026-04-07 17:45:18,690 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：get_user_location
+2026-04-07 17:45:18,690 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{}
+2026-04-07 17:45:18,692 - agent - INFO - middleware.py:38 - [tool monitor]工具get_user_location调用成功
+2026-04-07 17:45:18,693 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-07 17:45:18,694 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 杭州
+2026-04-07 17:45:21,108 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：get_weather
+2026-04-07 17:45:21,108 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'city': '杭州'}
+2026-04-07 17:45:21,109 - agent - INFO - middleware.py:38 - [tool monitor]工具get_weather调用成功
+2026-04-07 17:45:21,109 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-07 17:45:21,109 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 城市杭州天气为晴天，气温26摄氏度，空气湿度50%，南风1级，AQI21，最近6小时降雨概率极低
+2026-04-07 17:45:45,859 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:45:45,860 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '杭州气候特点及对扫地机器人拖地功能的影响'}
+2026-04-07 17:45:47,586 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:45:47,587 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-07 17:45:47,588 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 参考资料中未提及杭州气候特点，也未涉及气候对扫地机器人拖地功能的具体影响。
+2026-04-07 17:45:49,198 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:45:49,198 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '高湿度环境下扫拖一体机使用建议'}
+2026-04-07 17:45:57,656 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:45:57,659 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-07 17:45:57,659 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 在高湿度环境下（如南方回南天），应减少拖地频次，优先使用干拖模式；每次使用后需将机器人机身及耗材（如拖布、水箱）彻底晾干；每周对机器人进行除湿处理，防止受潮发霉或滋生细菌。
+2026-04-07 17:46:04,287 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有10条消息。
+2026-04-07 17:46:04,288 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 你获取吧
+2026-04-07 17:46:16,569 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：get_user_location
+2026-04-07 17:46:16,569 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{}
+2026-04-07 17:46:16,570 - agent - INFO - middleware.py:38 - [tool monitor]工具get_user_location调用成功
+2026-04-07 17:46:16,570 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有8条消息。
+2026-04-07 17:46:16,570 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 杭州
+2026-04-07 17:46:17,806 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：get_weather
+2026-04-07 17:46:17,807 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'city': '杭州'}
+2026-04-07 17:46:17,807 - agent - INFO - middleware.py:38 - [tool monitor]工具get_weather调用成功
+2026-04-07 17:46:17,809 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有10条消息。
+2026-04-07 17:46:17,809 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 城市杭州天气为晴天，气温26摄氏度，空气湿度50%，南风1级，AQI21，最近6小时降雨概率极低
+2026-04-07 17:46:35,769 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:46:35,770 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '扫拖一体机 热风烘干 杭州 潮湿天气 使用建议'}
+2026-04-07 17:47:14,087 - agent - ERROR - tools.py:50 - [rag_summarize]调用DashScope时发生SSL异常: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/embeddings/text-embedding/text-embedding (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+urllib3.exceptions.SSLError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/adapters.py", line 645, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/embeddings/text-embedding/text-embedding (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/qianjiang/Downloads/ts-agent/tools/tools.py", line 47, in rag_summarize
+    return rag.rag_summarize(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 47, in rag_summarize
+    context_docs = self.retriever_docs(query)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/rag/rag_service.py", line 43, in retriever_docs
+    return self.retriever.invoke(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_core/retrievers.py", line 222, in invoke
+    result = self._get_relevant_documents(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_core/vectorstores/base.py", line 1045, in _get_relevant_documents
+    docs = self.vectorstore.similarity_search(query, **kwargs_)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_chroma/vectorstores.py", line 748, in similarity_search
+    docs_and_scores = self.similarity_search_with_score(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_chroma/vectorstores.py", line 848, in similarity_search_with_score
+    query_embedding = self._embedding_function.embed_query(query)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_community/embeddings/dashscope.py", line 170, in embed_query
+    embedding = embed_with_retry(
+                ^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_community/embeddings/dashscope.py", line 83, in embed_with_retry
+    return _embed_with_retry(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 331, in wrapped_f
+    return copy(f, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/langchain_community/embeddings/dashscope.py", line 66, in _embed_with_retry
+    resp = embeddings.client.call(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/embeddings/text_embedding.py", line 52, in call
+    return super().call(
+           ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/client/base_api.py", line 515, in call
+    return request.call()
+           ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/api_entities/http_request.py", line 143, in call
+    output = next(response)
+             ^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/api_entities/http_request.py", line 501, in _handle_request
+    raise e
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/dashscope/api_entities/http_request.py", line 475, in _handle_request
+    response = session.post(
+               ^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/sessions.py", line 640, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/sessions.py", line 592, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/sessions.py", line 706, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/qianjiang/Downloads/ts-agent/.venv/lib/python3.12/site-packages/requests/adapters.py", line 676, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/services/embeddings/text-embedding/text-embedding (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
+2026-04-07 17:47:14,108 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:47:14,111 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-07 17:47:14,112 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 当前与模型服务的安全连接失败（SSL）。请检查网络代理/VPN、系统证书或稍后重试。
+2026-04-07 17:47:16,079 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:47:16,079 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '扫拖一体机 热风烘干功能 在湿度50%环境下是否必要'}
+2026-04-07 17:47:23,320 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:47:23,323 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有9条消息。
+2026-04-07 17:47:23,323 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 在湿度50%环境下，扫拖一体机的热风烘干功能仍有必要，因其可避免拖布潮湿发霉，且参考资料指出自动洗拖布款应具备≥50℃的烘干温度、≤2小时的烘干时间。
+2026-04-07 17:47:25,312 - agent - INFO - middleware.py:33 - [tool monitor]执行工具：rag_summarize
+2026-04-07 17:47:25,313 - agent - INFO - middleware.py:34 - [tool monitor]传入参数：{'query': '大户型宠物家庭 扫地机器人推荐 核心参数'}
+2026-04-07 17:47:30,471 - agent - INFO - middleware.py:38 - [tool monitor]工具rag_summarize调用成功
+2026-04-07 17:47:30,472 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有11条消息。
+2026-04-07 17:47:30,472 - agent - DEBUG - middleware.py:56 - [log_before_model]ToolMessage | 大户型宠物家庭选购扫地机器人应关注以下核心参数：吸力≥3000Pa（宠物家庭建议≥2500Pa，大户型及地毯场景更高），采用胶刷设计以防毛发缠绕；导航优先选择激光导航以适应复杂大户型；电池容量需大于5200mAh以保障续航；尘盒容量宜大，便于处理宠物毛发；若为扫拖一体机型，可考虑自动洗拖布或自动集尘功能。
+2026-04-07 17:51:53,246 - agent - INFO - middleware.py:54 - [log_before_model]即将调用模型，带有7条消息。
+2026-04-07 17:51:53,247 - agent - DEBUG - middleware.py:56 - [log_before_model]HumanMessage | 你还记得我叫啥吗
