@@ -97,7 +97,6 @@ class MainGraphAgentV2:
         )
         text = (result.content or "").strip().lower()
 
-        # 防御模型输出额外解释：从文本中提取合法标签
         match = re.search(r"\b(purchase|after_sales|unclear)\b", text)
         route = match.group(1) if match else "unclear"
         if route == "unclear":
@@ -135,7 +134,7 @@ class MainGraphAgentV2:
             context={"route": "after_sales", "report": False},
             config={"configurable": {"thread_id": f"{main_thread_id}:after-sales"}},
         )
-        reply = next(
+        reply = 下一处(
             (
                 msg.content
                 for msg in reversed(result["messages"])
