@@ -6,7 +6,7 @@ import streamlit as st
 from main_agent import MainAgent
 
 # 标题
-st.title("智扫通机器人智能客服")
+st.title("ts智能客服")
 st.divider()
 
 if "agent" not in st.session_state:
