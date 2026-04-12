@@ -1,0 +1,22 @@
+# 仅用于连接外部 MCP server 并拉取工具列表
+mcp_tools:
+  taoke:
+    transport: stdio
+    command: python
+    args:
+      - tools/mcp_stdio_proxy.py
+      - node
+      - taoke-mcp-main/dist/cli.js
+      - taoke-mcp-main/.mcp-logs
+    env:
+      ENV_URL: https://config.sinataoke.cn/api/mcp/secret
+      ENV_SECRET: url:mcp.sinataoke.cn
+      ENV_OVERRIDE: "false"
+      # 以下变量按你的账号实际填写；留空会影响对应平台工具可用性
+      TAOBAO_PID: ""
+      TAOBAO_SESSION: ""
+      JD_KEY: ""
+      JD_PID: ""
+      PDD_PID: ""
+      PDD_SESSION_TOKEN: ""
+    request_timeout: 15
