@@ -9,7 +9,7 @@ import aiosqlite
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.store.sqlite.aio import AsyncSqliteStore
 
-from utils.path_tool import get_abs_path
+from ts_agent.utils.path_tool import get_abs_path
 
 
 @dataclass

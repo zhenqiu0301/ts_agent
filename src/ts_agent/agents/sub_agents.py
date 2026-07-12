@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from langchain.agents import create_agent
 
-from model.factory import get_chat_model
-from tools.mcp_tools import get_lazy_price_compare_tools
-from tools.middleware import (
+from ts_agent.model.factory import get_chat_model
+from ts_agent.tools.mcp_tools import get_lazy_price_compare_tools
+from ts_agent.tools.middleware import (
     after_sales_human_review,
     get_context_summarize,
     log_before_model,
     monitor_tool,
     report_prompt_switch,
 )
-from tools.tools import (
+from ts_agent.tools.tools import (
     create_after_sales_ticket,
     create_manual_return_request,
     create_purchase_order,
@@ -21,7 +21,7 @@ from tools.tools import (
     rag_summarize,
     web_search,
 )
-from utils.prompt_loader import load_after_sales_prompts, load_system_prompts
+from ts_agent.utils.prompt_loader import load_after_sales_prompts, load_system_prompts
 
 purchase_tools = [
     rag_summarize,

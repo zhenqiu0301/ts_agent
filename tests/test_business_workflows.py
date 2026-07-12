@@ -7,9 +7,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
-from agents.sub_agents import after_sales_tools
-from tools.mcp_tools import get_lazy_price_compare_tools
-from tools.tools import (
+from ts_agent.agents.sub_agents import after_sales_tools
+from ts_agent.tools.mcp_tools import get_lazy_price_compare_tools
+from ts_agent.tools.tools import (
     create_after_sales_ticket,
     create_manual_return_request,
     create_purchase_order,
@@ -45,7 +45,7 @@ class ReportWorkflowTests(unittest.TestCase):
 
 class LazyMCPTests(unittest.IsolatedAsyncioTestCase):
     async def test_proxy_creation_does_not_connect_to_mcp(self) -> None:
-        with patch("tools.mcp_tools.get_price_compare_mcp_tools", new=AsyncMock()) as load:
+        with patch("ts_agent.tools.mcp_tools.get_price_compare_mcp_tools", new=AsyncMock()) as load:
             tools = get_lazy_price_compare_tools()
             self.assertEqual([tool.name for tool in tools], ["jd.goods.query", "pdd.goods.search"])
             load.assert_not_awaited()

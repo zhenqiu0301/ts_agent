@@ -11,8 +11,8 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 
-from utils.config_handler import rag_conf
-from utils.path_tool import get_abs_path
+from ts_agent.utils.config_handler import rag_conf
+from ts_agent.utils.path_tool import get_abs_path
 
 load_dotenv(get_abs_path(".env"))
 

@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-from utils.path_tool import get_abs_path
+from ts_agent.utils.path_tool import get_abs_path
 
 
 def load_yaml_config(path: str | PathLike[str]) -> dict[str, Any]:

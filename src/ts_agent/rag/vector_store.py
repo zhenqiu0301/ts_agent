@@ -12,16 +12,16 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from model.factory import get_embeddings
-from utils.config_handler import chroma_conf, rag_conf
-from utils.file_handler import (
+from ts_agent.model.factory import get_embeddings
+from ts_agent.utils.config_handler import chroma_conf, rag_conf
+from ts_agent.utils.file_handler import (
     get_file_md5_hex,
     listdir_with_allowed_type,
     pdf_loader,
     txt_loader,
 )
-from utils.logger_handler import logger
-from utils.path_tool import get_abs_path
+from ts_agent.utils.logger_handler import logger
+from ts_agent.utils.path_tool import get_abs_path
 
 
 class VectorStoreService:
@@ -115,12 +115,13 @@ class VectorStoreService:
             if existing_ids:
                 raise RuntimeError(
                     "检测到无索引清单的旧 Chroma 数据。为避免重复向量，请运行 "
-                    "`python -m rag.vector_store --rebuild`。"
+                    "`python -m ts_agent.rag.vector_store --rebuild`。"
                 )
         manifest = self._load_manifest()
         if manifest.get("embedding_model") != self.embedding_model_name:
             raise RuntimeError(
-                "Embedding 模型已变化，请运行 `python -m rag.vector_store --rebuild` 重建索引。"
+                "Embedding 模型已变化，请运行 "
+                "`python -m ts_agent.rag.vector_store --rebuild` 重建索引。"
             )
 
         files_manifest: dict[str, dict[str, Any]] = manifest["files"]

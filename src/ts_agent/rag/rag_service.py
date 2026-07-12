@@ -7,9 +7,9 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 
-from model.factory import get_chat_model
-from rag.vector_store import VectorStoreService
-from utils.prompt_loader import load_rag_prompts
+from ts_agent.model.factory import get_chat_model
+from ts_agent.rag.vector_store import VectorStoreService
+from ts_agent.utils.prompt_loader import load_rag_prompts
 
 
 class RagSummarizeService:

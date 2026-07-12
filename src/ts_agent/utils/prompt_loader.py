@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from utils.config_handler import prompts_conf
-from utils.path_tool import get_abs_path
+from ts_agent.utils.config_handler import prompts_conf
+from ts_agent.utils.path_tool import get_abs_path
 
 
 def _load_prompt(config_key: str) -> str:

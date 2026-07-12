@@ -15,12 +15,8 @@ from langchain_core.tools import StructuredTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from pydantic import BaseModel, Field
 
-if __package__ is None or __package__ == "":
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-
-from utils.logger_handler import logger
+from ts_agent.utils.logger_handler import logger
+from ts_agent.utils.path_tool import get_abs_path, get_project_root
 
 DEFAULT_PRICE_COMPARE_MCP_TOOLS = (
     "jd.goods.query",
@@ -55,9 +51,8 @@ class MCPToolLister:
     """仅负责连接 MCP server 并拉取工具列表。"""
 
     def __init__(self, config_path: str = "config/mcp.yml", timeout_seconds: float = 15.0):
-        base_dir = Path(__file__).resolve().parent.parent
         p = Path(config_path)
-        self.config_path = str(p if p.is_absolute() else (base_dir / p))
+        self.config_path = str(p if p.is_absolute() else Path(get_abs_path(p)))
         self.timeout_seconds = timeout_seconds
         self._client: MultiServerMCPClient | None = None
         self._tool_names: list[str] = []
@@ -127,7 +122,7 @@ class MCPToolLister:
                 return {}
 
             normalized: dict[str, dict[str, Any]] = {}
-            repo_root = Path(__file__).resolve().parent.parent
+            repo_root = Path(get_project_root())
             for name, conf in mcp_tools.items():
                 if not isinstance(name, str) or not isinstance(conf, dict):
                     continue

@@ -4,10 +4,10 @@ mcp_tools:
     transport: stdio
     command: python
     args:
-      - tools/mcp_stdio_proxy.py
+      - src/ts_agent/tools/mcp_stdio_proxy.py
       - node
-      - taoke-mcp-main/dist/cli.js
-      - taoke-mcp-main/.mcp-logs
+      - src/ts_agent/vendor/taoke-mcp-main/dist/cli.js
+      - src/ts_agent/vendor/taoke-mcp-main/.mcp-logs
     env:
       ENV_URL: https://config.sinataoke.cn/api/mcp/secret
       ENV_SECRET: url:mcp.sinataoke.cn

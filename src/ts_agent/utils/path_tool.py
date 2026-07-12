@@ -9,7 +9,7 @@ from __future__ import annotations
 from os import PathLike
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 def get_project_root() -> str:

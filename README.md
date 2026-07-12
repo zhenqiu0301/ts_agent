@@ -25,7 +25,7 @@ uv sync
 
 ## 外部 MCP
 
-项目默认会通过 Node.js 启动 `taoke-mcp-main/dist/cli.js`，配置位于
+项目默认会通过 Node.js 启动 `src/ts_agent/vendor/taoke-mcp-main/dist/cli.js`，配置位于
 `config/mcp.yml`。仓库保留 `dist/` 作为可直接运行的第三方构建产物；更新该目录时，应同时核对
 `package.json`、`package-lock.json` 和上游版本。
 
@@ -38,14 +38,11 @@ MCP_DISABLE_EXTERNAL=1 ./start.sh
 ## 主要结构
 
 ```text
-agents/      主图、子 Agent、人工审批和长期记忆
-config/      模型、RAG、提示词和 MCP 配置
-model/       DeepSeek 与 Embedding 延迟初始化
-prompts/     系统与任务提示词
-rag/         Chroma 检索与知识库索引
-tools/       订单、售后、搜索和 MCP 工具
-utils/       配置、路径、日志和文件加载
-tests/       不依赖真实模型请求的基础测试
+src/ts_agent/  主图、子 Agent、RAG、工具、Prompt 和内置 MCP
+config/        模型、RAG、Prompt 路径和 MCP 外部配置
+data/          知识文档与本地运行数据
+tests/         不依赖真实模型请求的测试
+app.py         Streamlit 应用入口
 ```
 
 ## 知识库索引
@@ -53,13 +50,13 @@ tests/       不依赖真实模型请求的基础测试
 同步新增、修改和删除的知识文件：
 
 ```bash
-uv run python -m rag.vector_store
+uv run python -m ts_agent.rag.vector_store
 ```
 
 首次启用索引清单或更换 Embedding 模型后执行完整重建：
 
 ```bash
-uv run python -m rag.vector_store --rebuild
+uv run python -m ts_agent.rag.vector_store --rebuild
 ```
 
 重建会将 `data/raw` 中知识文件的文本分片发送到 DashScope Embedding API。

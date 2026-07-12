@@ -13,10 +13,10 @@ import requests
 from langchain_core.tools import tool
 from langchain_tavily import TavilySearch
 
-from rag.rag_service import RagSummarizeService
-from utils.config_handler import agent_conf
-from utils.logger_handler import logger
-from utils.path_tool import get_abs_path
+from ts_agent.rag.rag_service import RagSummarizeService
+from ts_agent.utils.config_handler import agent_conf
+from ts_agent.utils.logger_handler import logger
+from ts_agent.utils.path_tool import get_abs_path
 
 
 def get_rag_service() -> RagSummarizeService:

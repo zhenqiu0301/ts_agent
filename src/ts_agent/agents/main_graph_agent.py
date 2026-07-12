@@ -1,16 +1,9 @@
 from __future__ import annotations
 
-import os
 import re
-import sys
 from collections.abc import Callable
 from datetime import datetime
 from typing import Annotated, Any, TypedDict
-
-if __package__ is None or __package__ == "":
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
 
 from langchain_core.messages import (
     AIMessage,
@@ -25,11 +18,11 @@ from langgraph.graph.message import REMOVE_ALL_MESSAGES, add_messages
 from langgraph.runtime import Runtime
 from langgraph.types import Command
 
-from agents import memory_utils
-from agents.persistence import PersistentBackends, build_persistent_backends
-from agents.sub_agents import AfterSalesAgent, PurchaseAgent
-from model.factory import get_chat_model
-from utils.logger_handler import logger
+from ts_agent.agents import memory_utils
+from ts_agent.agents.persistence import PersistentBackends, build_persistent_backends
+from ts_agent.agents.sub_agents import AfterSalesAgent, PurchaseAgent
+from ts_agent.model.factory import get_chat_model
+from ts_agent.utils.logger_handler import logger
 
 
 class MainGraphState(TypedDict):

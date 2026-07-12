@@ -3,8 +3,8 @@ from datetime import datetime
 import streamlit as st
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
-from agents.main_graph_agent import MainGraphAgent
-from utils.logger_handler import enable_file_logging
+from ts_agent.agents.main_graph_agent import MainGraphAgent
+from ts_agent.utils.logger_handler import enable_file_logging
 
 AGENT_RUNTIME_VERSION = "native-async-v1"
 enable_file_logging()

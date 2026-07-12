@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from utils.config_handler import (
+from ts_agent.utils.config_handler import (
     agent_conf,
     chroma_conf,
     load_yaml_config,
@@ -13,8 +13,8 @@ from utils.config_handler import (
     rag_conf,
     validate_config,
 )
-from utils.path_tool import get_abs_path, get_project_root
-from utils.prompt_loader import (
+from ts_agent.utils.path_tool import get_abs_path, get_project_root
+from ts_agent.utils.prompt_loader import (
     load_after_sales_prompts,
     load_rag_prompts,
     load_report_prompts,
@@ -24,6 +24,12 @@ from utils.prompt_loader import (
 
 
 class PathToolTests(unittest.TestCase):
+    def test_application_uses_src_package_layout(self) -> None:
+        import ts_agent
+
+        package_path = Path(ts_agent.__file__).resolve()
+        self.assertIn("src/ts_agent", package_path.as_posix())
+
     def test_project_root_contains_project_metadata(self) -> None:
         root = Path(get_project_root())
         self.assertTrue(root.is_absolute())

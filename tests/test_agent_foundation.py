@@ -8,12 +8,12 @@ from langchain_core.embeddings import DeterministicFakeEmbedding
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langchain_core.messages import AIMessage
 
-from agents.main_graph_agent import MainGraphAgent
-from agents.persistence import build_persistent_backends
-from model.factory import get_chat_model, get_embeddings
-from rag.vector_store import VectorStoreService
-from tools.tools import get_rag_service, get_tavily_search
-from utils.file_handler import listdir_with_allowed_type
+from ts_agent.agents.main_graph_agent import MainGraphAgent
+from ts_agent.agents.persistence import build_persistent_backends
+from ts_agent.model.factory import get_chat_model, get_embeddings
+from ts_agent.rag.vector_store import VectorStoreService
+from ts_agent.tools.tools import get_rag_service, get_tavily_search
+from ts_agent.utils.file_handler import listdir_with_allowed_type
 
 
 class LazyInitializationTests(unittest.TestCase):
