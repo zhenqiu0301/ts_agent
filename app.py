@@ -47,6 +47,40 @@ with st.sidebar:
     st.subheader("会话控制")
     st.caption(f"当前 thread_id: {st.session_state['thread_id']}")
 
+    with st.expander("记忆管理"):
+        if st.button("查看我的记忆", use_container_width=True):
+            async def load_memories():
+                agent = await MainGraphAgent.create()
+                try:
+                    st.session_state["memory_snapshot"] = await agent.list_user_memories(
+                        st.session_state["user_id"]
+                    )
+                finally:
+                    await agent.close()
+                yield "记忆已加载。"
+
+            st.write_stream(load_memories())
+
+        snapshot = st.session_state.get("memory_snapshot")
+        if snapshot:
+            st.caption("结构化用户画像")
+            st.json(snapshot.get("profile", []), expanded=False)
+            st.caption("历史业务事件")
+            st.json(snapshot.get("episodes", []), expanded=False)
+
+        if st.button("清除我的长期记忆", use_container_width=True):
+            async def clear_memories():
+                agent = await MainGraphAgent.create()
+                try:
+                    await agent.clear_user_memories(st.session_state["user_id"])
+                finally:
+                    await agent.close()
+                st.session_state["memory_snapshot"] = None
+                st.session_state["bootstrap_summary_loaded"] = False
+                yield "长期记忆已清除。"
+
+            st.write_stream(clear_memories())
+
     if st.button("结束会话并整理记忆", use_container_width=True):
         async def finalize_session():
             if not st.session_state.get("message"):
@@ -113,6 +147,7 @@ if prompt:
                 progress.update(label=f"正在调用工具：{', '.join(event['names'])}")
                 return
             node_labels = {
+                "pending_gate": "正在检查待处理业务动作",
                 "analyze": "已完成意图识别",
                 "purchase": "正在处理选购需求",
                 "after_sales": "正在处理售后需求",
@@ -128,7 +163,7 @@ if prompt:
                 if not st.session_state["bootstrap_summary_loaded"]:
                     st.session_state["pending_bootstrap_summary"] = (
                         await agent.load_user_memory_summary(
-                            st.session_state["user_id"]
+                            st.session_state["user_id"], prompt
                         )
                     )
                     st.session_state["bootstrap_summary_loaded"] = True

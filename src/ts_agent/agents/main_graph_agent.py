@@ -15,7 +15,6 @@ from langchain_core.messages import (
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import REMOVE_ALL_MESSAGES, add_messages
-from langgraph.runtime import Runtime
 from langgraph.types import Command
 
 from ts_agent.agents import memory_utils
@@ -27,7 +26,6 @@ from ts_agent.utils.logger_handler import logger
 
 class MainGraphState(TypedDict):
     recent_messages: Annotated[list[BaseMessage], add_messages]
-    all_messages: Annotated[list[BaseMessage], add_messages]
     summary: str
     route: str
     response: str
@@ -94,6 +92,39 @@ class MainGraphAgent:
     async def _delete_pending_review(self, route: str, thread_id: str) -> None:
         await self.store.adelete(self._pending_review_namespace(route), thread_id)
 
+    async def _update_pending_review(
+        self, route: str, thread_id: str, pending: dict[str, Any], status: str
+    ) -> dict[str, Any]:
+        updated = {
+            **pending,
+            "status": status,
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        await self._save_pending_review(route, thread_id, updated)
+        return updated
+
+    async def _complete_pending_review(
+        self, route: str, thread_id: str, pending: dict[str, Any]
+    ) -> None:
+        completed = {
+            **pending,
+            "status": "completed",
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        await self.store.aput(("hitl_history", route), thread_id, completed)
+        await self._delete_pending_review(route, thread_id)
+
+    async def _find_pending_route(self, main_thread_id: str) -> str | None:
+        for route, suffix in (("purchase", "purchase"), ("after_sales", "after-sales")):
+            pending = await self._get_pending_review(route, f"{main_thread_id}:{suffix}")
+            if pending and pending.get("status") in {
+                "awaiting_review",
+                "executing",
+                "failed",
+            }:
+                return route
+        return None
+
     @staticmethod
     def _parse_ticket_review_decision(text: str) -> dict[str, Any] | None:
         normalized = re.sub(r"\s+", "", (text or "").lower())
@@ -152,12 +183,22 @@ class MainGraphAgent:
     def _build_graph(self):
         builder = StateGraph(MainGraphState)
 
+        builder.add_node("pending_gate", self._pending_gate_node)
         builder.add_node("analyze", self._analyze_node)
         builder.add_node("purchase", self._purchase_node)
         builder.add_node("after_sales", self._after_sales_node)
         builder.add_node("summarize", self._summarize_node)
 
-        builder.add_edge(START, "analyze")
+        builder.add_edge(START, "pending_gate")
+        builder.add_conditional_edges(
+            "pending_gate",
+            self._pending_gate_selector,
+            {
+                "analyze": "analyze",
+                "purchase": "purchase",
+                "after_sales": "after_sales",
+            },
+        )
         builder.add_conditional_edges(
             "analyze",
             self._route_selector,
@@ -173,6 +214,21 @@ class MainGraphAgent:
 
         return builder.compile(checkpointer=self.checkpointer, store=self.store)
 
+    async def _pending_gate_node(
+        self, state: MainGraphState, config: RunnableConfig
+    ) -> dict[str, str]:
+        self._node_log("pending_gate", "检查待审批业务动作", state)
+        main_thread_id = str(
+            config.get("configurable", {}).get("thread_id", "default")
+        )
+        route = await self._find_pending_route(main_thread_id)
+        return {"route": route or "analyze"}
+
+    @staticmethod
+    def _pending_gate_selector(state: MainGraphState) -> str:
+        route = state.get("route", "analyze")
+        return route if route in {"purchase", "after_sales"} else "analyze"
+
     @staticmethod
     def _node_log(node: str, action: str, state: MainGraphState | None = None) -> None:
         msg_count = 0
@@ -185,38 +241,22 @@ class MainGraphAgent:
             f"state.recent_messages数量：{msg_count}"
         )
 
-    async def load_user_memory_summary(self, user_id: str = "default_user") -> str:
-        """供 app 在会话创建/切换时调用：汇总该用户所有已 finalize 的线程记忆。"""
+    async def load_user_memory_summary(
+        self, user_id: str = "default_user", query: str = ""
+    ) -> str:
+        """按当前问题检索少量相关画像和历史事件。"""
         if self.store is None:
             return ""
+        memories = await memory_utils.retrieve_relevant_memories(
+            self.store, user_id, query, top_k=5
+        )
+        return memory_utils.format_memory_context(memories)
 
-        namespace = memory_utils.memory_namespace(user_id)
-        items = await memory_utils.list_namespace_items(self.store, namespace)
-        if not items:
-            return ""
+    async def list_user_memories(self, user_id: str) -> dict[str, list[dict]]:
+        return await memory_utils.list_user_memories(self.store, user_id)
 
-        thread_summaries: dict[str, str] = {}
-        for item in items:
-            key = str(getattr(item, "key", "")).strip()
-            value = getattr(item, "value", {}) or {}
-            if not isinstance(value, dict):
-                continue
-
-            # 仅聚合已 finalize 的线程聚合记录；忽略 core 与 delta。
-            if key == "core":
-                continue
-            if memory_utils.is_delta_memory_key(key):
-                continue
-
-            summary = str(value.get("summary", "")).strip()
-            if summary:
-                thread_summaries[key] = summary
-
-        pieces = [*thread_summaries.values()]
-        long_memory = "\n".join([x for x in pieces if x.strip()]).strip()
-        if not long_memory:
-            return ""
-        return await memory_utils.long_memory_to_summary(self.router_model, long_memory)
+    async def clear_user_memories(self, user_id: str) -> None:
+        await memory_utils.clear_user_memories(self.store, user_id)
 
     def _build_messages(self, state: MainGraphState) -> list[BaseMessage]:
         summary = state.get("summary", "").strip()
@@ -264,6 +304,7 @@ class MainGraphAgent:
         user_id = configurable.get("user_id", "default_user")
         sub_thread_id = f"{main_thread_id}:purchase"
         pending = await self._get_pending_review("purchase", sub_thread_id)
+        resuming_pending = False
         if pending:
             latest_user_text = ""
             for msg in reversed(state.get("recent_messages", [])):
@@ -290,7 +331,10 @@ class MainGraphAgent:
             payload: Command | dict = Command(
                 resume={"decisions": [decision for _ in range(review_count)]}
             )
-            await self._delete_pending_review("purchase", sub_thread_id)
+            pending = await self._update_pending_review(
+                "purchase", sub_thread_id, pending, "executing"
+            )
+            resuming_pending = True
         else:
             payload = {"messages": self._build_messages(state)}
 
@@ -301,11 +345,18 @@ class MainGraphAgent:
             "thread_id": sub_thread_id,
             "user_id": user_id,
         }
-        result = await self.purchase_agent.ainvoke(
-            payload,
-            context={"route": "purchase", "report": False},
-            config=child_config,
-        )
+        try:
+            result = await self.purchase_agent.ainvoke(
+                payload,
+                context={"route": "purchase", "report": False},
+                config=child_config,
+            )
+        except Exception:
+            if resuming_pending and pending:
+                await self._update_pending_review(
+                    "purchase", sub_thread_id, pending, "failed"
+                )
+            raise
 
         interrupts = result.get("__interrupt__")
         if interrupts:
@@ -340,9 +391,10 @@ class MainGraphAgent:
         )
         # logger.info(f"[graph node]节点purchase执行完成，回复长度：{len(str(reply))}")
         ai_msg = AIMessage(content=reply)
+        if resuming_pending and pending:
+            await self._complete_pending_review("purchase", sub_thread_id, pending)
         return {
             "recent_messages": [ai_msg],
-            "all_messages": [ai_msg],
             "response": reply,
         }
 
@@ -353,6 +405,7 @@ class MainGraphAgent:
         user_id = configurable.get("user_id", "default_user")
         sub_thread_id = f"{main_thread_id}:after-sales"
         pending = await self._get_pending_review("after_sales", sub_thread_id)
+        resuming_pending = False
         if pending:
             latest_user_text = ""
             for msg in reversed(state.get("recent_messages", [])):
@@ -379,7 +432,10 @@ class MainGraphAgent:
             payload: Command | dict = Command(
                 resume={"decisions": [decision for _ in range(review_count)]}
             )
-            await self._delete_pending_review("after_sales", sub_thread_id)
+            pending = await self._update_pending_review(
+                "after_sales", sub_thread_id, pending, "executing"
+            )
+            resuming_pending = True
         else:
             payload = {"messages": self._build_messages(state)}
 
@@ -390,11 +446,18 @@ class MainGraphAgent:
             "thread_id": sub_thread_id,
             "user_id": user_id,
         }
-        result = await self.after_sales_agent.ainvoke(
-            payload,
-            context={"route": "after_sales", "report": False},
-            config=child_config,
-        )
+        try:
+            result = await self.after_sales_agent.ainvoke(
+                payload,
+                context={"route": "after_sales", "report": False},
+                config=child_config,
+            )
+        except Exception:
+            if resuming_pending and pending:
+                await self._update_pending_review(
+                    "after_sales", sub_thread_id, pending, "failed"
+                )
+            raise
 
         interrupts = result.get("__interrupt__")
         if interrupts:
@@ -429,9 +492,10 @@ class MainGraphAgent:
         )
         # logger.info(f"[graph node]节点after_sales执行完成，回复长度：{len(str(reply))}")
         ai_msg = AIMessage(content=reply)
+        if resuming_pending and pending:
+            await self._complete_pending_review("after_sales", sub_thread_id, pending)
         return {
             "recent_messages": [ai_msg],
-            "all_messages": [ai_msg],
             "response": reply,
         }
 
@@ -439,19 +503,10 @@ class MainGraphAgent:
         self,
         state: MainGraphState,
         config: RunnableConfig,
-        runtime: Runtime,
     ):
         self._node_log("summarize", "执行会话摘要压缩与长期记忆增量整理", state)
         messages = state.get("recent_messages", [])
         summary = state.get("summary", "")
-        route = state.get("route", "unclear")
-        store = runtime.store
-        user_id = memory_utils.get_user_id(config)
-        namespace = memory_utils.memory_namespace(user_id)
-        thread_id = (
-            str(config.get("configurable", {}).get("thread_id", "default")).strip()
-            or "default"
-        )
 
         if len(messages) < self.MAX_RECENT_MESSAGES:
             logger.info(
@@ -463,21 +518,6 @@ class MainGraphAgent:
         old_messages = messages[: -self.MAX_RECENT_MESSAGES]
         recent_messages = messages[-self.MAX_RECENT_MESSAGES :]
         updates: dict = {}
-
-        if store is not None and route in {"purchase", "after_sales"}:
-            delta_memory = await memory_utils.summarize_long_memory_delta(
-                self.router_model, old_messages
-            )
-            if delta_memory:
-                await store.aput(
-                    namespace,
-                    memory_utils.delta_memory_key(thread_id),
-                    {
-                        "delta": delta_memory,
-                        "thread_id": thread_id,
-                        "updated_at": datetime.now().isoformat(timespec="seconds"),
-                    },
-                )
 
         new_summary = await memory_utils.merge_summary(
             self.router_model, summary, old_messages
@@ -499,61 +539,30 @@ class MainGraphAgent:
         user_id: str = "default_user",
         recent_messages: list[BaseMessage] | None = None,
     ) -> bool:
-        """在线程结束时调用：将本线程所有增量 + recent_messages 残留整理到 key=thread_id。"""
+        """在线程结束时写入业务事件并更新结构化用户画像。"""
         if self.store is None:
             return False
 
         normalized_thread_id = (thread_id or "default").strip() or "default"
-        namespace = memory_utils.memory_namespace(user_id)
-        thread_item = await self.store.aget(namespace, normalized_thread_id)
-        thread_memory = (
-            str(thread_item.value.get("summary", "")).strip() if thread_item else ""
-        )
-        delta_items = await memory_utils.list_thread_delta_items(
-            self.store, namespace, normalized_thread_id
-        )
-
-        pieces = []
-        if thread_memory:
-            pieces.append(thread_memory)
-        for it in delta_items:
-            delta = str(it.value.get("delta", "")).strip()
-            if delta:
-                pieces.append(delta)
-
-        # 线程结束时，补充调用方传入的 recent_messages 残留。
         tail_messages = [
             msg for msg in (recent_messages or []) if isinstance(msg, BaseMessage)
         ]
-        if tail_messages:
-            tail_delta = await memory_utils.summarize_long_memory_delta(
-                self.router_model, tail_messages
-            )
-            if tail_delta:
-                pieces.append(tail_delta)
-
-        if not pieces:
+        if not tail_messages:
             return False
-
-        merged_memory = "\n".join(pieces)
-        compacted = await memory_utils.compact_long_memory(
-            self.router_model, merged_memory
+        checkpoint = await self.checkpointer.aget(
+            {"configurable": {"thread_id": normalized_thread_id}}
         )
-        final_text = compacted or merged_memory
-
-        await self.store.aput(
-            namespace,
+        route = "unknown"
+        if checkpoint:
+            route = str(checkpoint.get("channel_values", {}).get("route", "unknown"))
+        return await memory_utils.save_memory_episode(
+            self.store,
+            self.router_model,
+            user_id,
             normalized_thread_id,
-            {
-                "summary": final_text,
-                "thread_id": normalized_thread_id,
-                "updated_at": datetime.now().isoformat(timespec="seconds"),
-            },
+            tail_messages,
+            route,
         )
-
-        for it in delta_items:
-            await self.store.adelete(namespace, it.key)
-        return True
 
     async def execute_stream(
         self,
@@ -568,7 +577,6 @@ class MainGraphAgent:
         user_msg = HumanMessage(content=query)
         input_payload: dict = {
             "recent_messages": [user_msg],
-            "all_messages": [user_msg],
             "response": "",
         }
         if bootstrap_summary is not None:

@@ -476,3 +476,20 @@ def fill_context_for_report() -> str:
     context["report"] = True
     user_id = str(context.get("user_id", "")).strip() or DEFAULT_USER_ID
     return f"fill_context_for_report已调用，报告上下文已激活（user_id={user_id}）"
+
+
+@tool(parse_docstring=True)
+def get_usage_report_data(user_id: str, month: str) -> str:
+    """按确定流程激活报告上下文并读取指定月份的使用数据。
+
+    Args:
+        user_id (str): 目标用户 ID。
+        month (str): 目标月份，格式 YYYY-MM。
+
+    Returns:
+        str: 使用报告原始数据，未命中时返回明确提示。
+    """
+
+    fill_context_for_report.invoke({})
+    result = fetch_external_data.invoke({"user_id": user_id, "month": month})
+    return result or "未查询到该用户在指定月份的使用记录。"

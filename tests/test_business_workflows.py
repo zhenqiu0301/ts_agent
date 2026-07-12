@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 from ts_agent.agents.sub_agents import after_sales_tools
-from ts_agent.tools.mcp_tools import get_lazy_price_compare_tools
+from ts_agent.tools.mcp_tools import get_lazy_price_compare_tools, get_price_comparison_tool
 from ts_agent.tools.tools import (
     create_after_sales_ticket,
     create_manual_return_request,
@@ -24,10 +24,8 @@ from ts_agent.tools.tools import (
 class ReportWorkflowTests(unittest.TestCase):
     def test_after_sales_agent_has_complete_report_toolchain(self) -> None:
         names = {tool.name for tool in after_sales_tools}
-        self.assertTrue(
-            {"get_user_context", "fill_context_for_report", "fetch_external_data"}
-            <= names
-        )
+        self.assertTrue({"get_user_context", "get_usage_report_data"} <= names)
+        self.assertNotIn("fetch_external_data", names)
 
     def test_report_data_requires_context_marker(self) -> None:
         external_data.clear()
@@ -49,6 +47,19 @@ class LazyMCPTests(unittest.IsolatedAsyncioTestCase):
             tools = get_lazy_price_compare_tools()
             self.assertEqual([tool.name for tool in tools], ["jd.goods.query", "pdd.goods.search"])
             load.assert_not_awaited()
+
+    async def test_combined_price_tool_enforces_platform_order(self) -> None:
+        with patch(
+            "ts_agent.tools.mcp_tools._invoke_price_tool",
+            new=AsyncMock(side_effect=["jd-result", "pdd-result"]),
+        ) as invoke:
+            result = await get_price_comparison_tool().ainvoke({"keyword": "X1"})
+            self.assertIn("jd-result", result)
+            self.assertIn("pdd-result", result)
+            self.assertEqual(
+                [call.args[0] for call in invoke.await_args_list],
+                ["jd.goods.query", "pdd.goods.search"],
+            )
 
 
 class BusinessActionTests(unittest.TestCase):

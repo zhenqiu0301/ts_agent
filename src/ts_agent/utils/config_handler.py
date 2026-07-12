@@ -107,6 +107,7 @@ def validate_config() -> None:
         prompts_conf,
         (
             "main_prompt_path",
+            "purchase_prompt_path",
             "rag_summarize_prompt_path",
             "report_prompt_path",
             "summary_prompt_path",

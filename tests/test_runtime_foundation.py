@@ -16,6 +16,7 @@ from ts_agent.utils.config_handler import (
 from ts_agent.utils.path_tool import get_abs_path, get_project_root
 from ts_agent.utils.prompt_loader import (
     load_after_sales_prompts,
+    load_purchase_prompts,
     load_rag_prompts,
     load_report_prompts,
     load_summary_prompts,
@@ -48,6 +49,7 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("embedding_model_name", rag_conf)
         self.assertIn("persist_directory", chroma_conf)
         self.assertIn("main_prompt_path", prompts_conf)
+        self.assertIn("purchase_prompt_path", prompts_conf)
         self.assertIn("external_data_path", agent_conf)
 
     def test_configuration_schema_is_valid(self) -> None:
@@ -71,6 +73,7 @@ class PromptLoaderTests(unittest.TestCase):
             load_report_prompts,
             load_summary_prompts,
             load_after_sales_prompts,
+            load_purchase_prompts,
         )
         for loader in loaders:
             with self.subTest(loader=loader.__name__):

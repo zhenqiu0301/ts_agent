@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import shutil
 import socket
@@ -310,6 +311,33 @@ def get_lazy_price_compare_tools() -> list[StructuredTool]:
         _lazy_price_tool("jd.goods.query", "按关键词查询京东商品与价格。"),
         _lazy_price_tool("pdd.goods.search", "按关键词查询拼多多商品与价格。"),
     ]
+
+
+async def _compare_prices(keyword: str) -> str:
+    """按确定顺序查询京东和拼多多，并返回统一结果。"""
+
+    jd_result = await _invoke_price_tool("jd.goods.query", keyword)
+    pdd_result = await _invoke_price_tool("pdd.goods.search", keyword)
+    return json.dumps(
+        {
+            "keyword": keyword,
+            "query_order": ["jd.goods.query", "pdd.goods.search"],
+            "jd": jd_result,
+            "pdd": pdd_result,
+        },
+        ensure_ascii=False,
+    )
+
+
+def get_price_comparison_tool() -> StructuredTool:
+    """返回确定性的两平台比价组合工具。"""
+
+    return StructuredTool.from_function(
+        coroutine=_compare_prices,
+        name="compare_prices",
+        description="按固定顺序查询京东和拼多多并返回比价数据。",
+        args_schema=PriceSearchInput,
+    )
 
 
 async def smoke_test_selected_tools(max_retries: int = 6) -> dict[str, str]:

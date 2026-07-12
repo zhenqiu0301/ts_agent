@@ -27,6 +27,10 @@ def load_system_prompts() -> str:
     return _load_prompt("main_prompt_path")
 
 
+def load_purchase_prompts() -> str:
+    return _load_prompt("purchase_prompt_path")
+
+
 def load_rag_prompts() -> str:
     return _load_prompt("rag_summarize_prompt_path")
 

@@ -1,4 +1,5 @@
 main_prompt_path: src/ts_agent/prompts/main_prompt.txt
+purchase_prompt_path: src/ts_agent/prompts/purchase_prompt.txt
 rag_summarize_prompt_path: src/ts_agent/prompts/rag_summarize.txt
 report_prompt_path: src/ts_agent/prompts/report_prompt.txt
 summary_prompt_path: src/ts_agent/prompts/summary_prompt.txt

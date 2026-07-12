@@ -21,6 +21,7 @@ from ts_agent.tools.tools import reset_tool_runtime_context, set_tool_runtime_co
 from ts_agent.utils.logger_handler import logger
 from ts_agent.utils.prompt_loader import (
     load_after_sales_prompts,
+    load_purchase_prompts,
     load_report_prompts,
     load_summary_prompts,
     load_system_prompts,
@@ -118,7 +119,10 @@ async def monitor_tool(
         result = await handler(request)
         logger.info(f"[tool monitor]工具{request.tool_call['name']}调用成功")
 
-        if request.tool_call["name"] == "fill_context_for_report":
+        if request.tool_call["name"] in {
+            "fill_context_for_report",
+            "get_usage_report_data",
+        }:
             request.runtime.context["report"] = True
 
         return result
@@ -158,5 +162,8 @@ def report_prompt_switch(request: ModelRequest):  # 动态切换提示词
 
     if route == "after_sales":
         return load_after_sales_prompts()
+
+    if route == "purchase":
+        return load_purchase_prompts()
 
     return load_system_prompts()
