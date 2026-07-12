@@ -1,6 +1,7 @@
 # TS Agent 智能客服
 
 基于 LangGraph、DeepSeek、DashScope Embedding、Chroma 和 Streamlit 的智能客服示例，包含选购咨询、售后处理、RAG 知识检索、人工审批和长期记忆。
+模型、子 Agent、MCP 工具、流式输出和 SQLite 持久化使用原生异步调用链。
 
 ## 环境要求
 

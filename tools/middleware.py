@@ -1,7 +1,4 @@
-import asyncio
-import inspect
 import os
-import threading
 from collections.abc import Callable
 from functools import lru_cache
 
@@ -38,35 +35,6 @@ def get_context_summarize() -> SummarizationMiddleware:
         keep=("messages", 10),
         summary_prompt=load_summary_prompts(),
     )
-
-
-def _run_awaitable_sync(awaitable):
-    """在同步上下文安全执行 awaitable，兼容同步 invoke 流程。"""
-    try:
-        asyncio.get_running_loop()
-        has_running_loop = True
-    except RuntimeError:
-        has_running_loop = False
-
-    if not has_running_loop:
-        return asyncio.run(awaitable)
-
-    holder = {"value": None, "error": None}
-
-    def _runner():
-        try:
-            holder["value"] = asyncio.run(awaitable)
-        except Exception as e:
-            holder["error"] = e
-
-    t = threading.Thread(target=_runner, daemon=True)
-    t.start()
-    t.join(timeout=30)
-    if t.is_alive():
-        raise TimeoutError("工具调用超时")
-    if holder["error"] is not None:
-        raise holder["error"]
-    return holder["value"]
 
 
 def _safe_preview_content(content) -> str:
@@ -119,7 +87,7 @@ after_sales_human_review = HumanInTheLoopMiddleware(
 
 
 @wrap_tool_call
-def monitor_tool(
+async def monitor_tool(
     # 请求的数据封装
     request: ToolCallRequest,
     # 执行的函数本身
@@ -147,9 +115,7 @@ def monitor_tool(
 
     token = set_tool_runtime_context(runtime_context)
     try:
-        result = handler(request)
-        if inspect.isawaitable(result):
-            result = _run_awaitable_sync(result)
+        result = await handler(request)
         logger.info(f"[tool monitor]工具{request.tool_call['name']}调用成功")
 
         if request.tool_call["name"] == "fill_context_for_report":

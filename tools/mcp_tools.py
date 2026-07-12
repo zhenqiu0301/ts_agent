@@ -5,14 +5,12 @@ import os
 import shutil
 import socket
 import sys
-import threading
 import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
 import yaml
-from langchain_core.tools import StructuredTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
 if __package__ is None or __package__ == "":
@@ -62,7 +60,7 @@ class MCPToolLister:
         self._client: MultiServerMCPClient | None = None
         self._tool_names: list[str] = []
         self._tool_objects: list[Any] = []
-        self._lock = threading.Lock()
+        self._lock = asyncio.Lock()
         self._max_retries = int(os.getenv("MCP_MAX_RETRIES", "3") or "3")
         self._failure_count = 0
         self._disabled = False
@@ -193,40 +191,6 @@ class MCPToolLister:
             logger.warning(f"[mcp_tools] 读取配置失败: {str(e)}")
             return {}
 
-    def _run_async(self, coro):
-        try:
-            asyncio.get_running_loop()
-            has_running_loop = True
-        except RuntimeError:
-            has_running_loop = False
-
-        if not has_running_loop:
-            try:
-                return asyncio.run(coro)
-            except Exception as e:
-                logger.warning(f"[mcp_tools] 异步执行失败: {str(e)}")
-                return None
-
-        holder: dict[str, Any] = {"value": None, "error": None}
-
-        def runner():
-            try:
-                holder["value"] = asyncio.run(coro)
-            except Exception as e:
-                holder["error"] = e
-
-        t = threading.Thread(target=runner, daemon=True)
-        t.start()
-        t.join(timeout=self.timeout_seconds + 1)
-
-        if t.is_alive():
-            logger.warning("[mcp_tools] 拉取工具列表超时")
-            return None
-        if holder["error"] is not None:
-            logger.warning(f"[mcp_tools] 拉取工具列表失败: {holder['error']}")
-            return None
-        return holder["value"]
-
     async def _refresh_async(self) -> list[str]:
         if self._is_temporarily_disabled():
             return []
@@ -259,35 +223,34 @@ class MCPToolLister:
             logger.info("[mcp_tools] 外部 MCP 工具列表为空。")
         return self._tool_names
 
-    def list_tools(self, refresh: bool = False) -> list[str]:
-        with self._lock:
+    async def list_tools(self, refresh: bool = False) -> list[str]:
+        async with self._lock:
             if self._is_temporarily_disabled():
                 return []
             if refresh or not self._tool_names:
-                names = self._run_async(self._refresh_async())
-                return names if isinstance(names, list) else []
+                return await self._refresh_async()
             return list(self._tool_names)
 
-    def get_tool_objects(self, refresh: bool = False) -> list[Any]:
-        with self._lock:
+    async def get_tool_objects(self, refresh: bool = False) -> list[Any]:
+        async with self._lock:
             if self._is_temporarily_disabled():
                 return []
             if refresh or not self._tool_objects:
-                self._run_async(self._refresh_async())
+                await self._refresh_async()
             return list(self._tool_objects)
 
 
 _lister = MCPToolLister()
 
 
-def list_mcp_tools(refresh: bool = False) -> list[str]:
+async def list_mcp_tools(refresh: bool = False) -> list[str]:
     """项目唯一外部 MCP 能力：拉取工具列表。"""
-    return _lister.list_tools(refresh=refresh)
+    return await _lister.list_tools(refresh=refresh)
 
 
-def get_mcp_tool_objects(refresh: bool = False) -> list[Any]:
+async def get_mcp_tool_objects(refresh: bool = False) -> list[Any]:
     """返回可直接传给 LangChain Agent 的 MCP 工具对象列表。"""
-    return _lister.get_tool_objects(refresh=refresh)
+    return await _lister.get_tool_objects(refresh=refresh)
 
 
 def _keep_price_compare_tools_by_whitelist(mcp_tools: list[Any]) -> list[Any]:
@@ -307,70 +270,13 @@ def _keep_price_compare_tools_by_whitelist(mcp_tools: list[Any]) -> list[Any]:
     return selected
 
 
-def _run_awaitable_safely(awaitable):
-    """在同步上下文安全执行 awaitable，避免事件循环冲突。"""
-    try:
-        asyncio.get_running_loop()
-        has_running_loop = True
-    except RuntimeError:
-        has_running_loop = False
-
-    if not has_running_loop:
-        return asyncio.run(awaitable)
-
-    holder: dict[str, Any] = {"value": None, "error": None}
-
-    def _runner():
-        try:
-            holder["value"] = asyncio.run(awaitable)
-        except Exception as e:
-            holder["error"] = e
-
-    t = threading.Thread(target=_runner, daemon=True)
-    t.start()
-    t.join(timeout=30)
-
-    if t.is_alive():
-        raise TimeoutError("MCP工具调用超时")
-    if holder["error"] is not None:
-        raise holder["error"]
-    return holder["value"]
+async def get_price_compare_mcp_tools(refresh: bool = False) -> list[Any]:
+    """获取白名单过滤后的原生异步 MCP 工具。"""
+    raw = await get_mcp_tool_objects(refresh=refresh)
+    return _keep_price_compare_tools_by_whitelist(raw)
 
 
-def _syncify_mcp_tool(tool: Any):
-    """将仅支持 ainvoke 的 MCP 工具包装为可同步调用。"""
-    name = str(getattr(tool, "name", "")).strip()
-    if not name:
-        return tool
-
-    async_callable = getattr(tool, "ainvoke", None)
-    if not callable(async_callable):
-        return tool
-
-    def _call_sync(**kwargs):
-        try:
-            return _run_awaitable_safely(tool.ainvoke(kwargs))
-        except Exception as e:
-            msg = _format_compact_error(e)
-            return f"[MCP:{name}] 调用失败：{msg}"
-
-    return StructuredTool.from_function(
-        func=_call_sync,
-        name=name,
-        description=str(getattr(tool, "description", "") or f"MCP tool: {name}"),
-        args_schema=getattr(tool, "args_schema", None),
-        infer_schema=getattr(tool, "args_schema", None) is None,
-    )
-
-
-def get_sync_price_compare_mcp_tools(refresh: bool = False) -> list[Any]:
-    """获取已白名单过滤、且同步可调用的价格比较 MCP 工具列表。"""
-    raw = get_mcp_tool_objects(refresh=refresh)
-    filtered = _keep_price_compare_tools_by_whitelist(raw)
-    return [_syncify_mcp_tool(t) for t in filtered]
-
-
-def smoke_test_selected_tools(max_retries: int = 6) -> dict[str, str]:
+async def smoke_test_selected_tools(max_retries: int = 6) -> dict[str, str]:
     """
     仅用于本地联调：验证已保留的两个价格工具是否可调用。
     返回 {tool_name: status}，status 为 OK / ERR:...
@@ -390,20 +296,20 @@ def smoke_test_selected_tools(max_retries: int = 6) -> dict[str, str]:
     for tool_name in target_names:
         last_err = "tools not loaded"
         for _ in range(max_retries):
-            tools = get_mcp_tool_objects(refresh=True)
+            tools = await get_mcp_tool_objects(refresh=True)
             mapping = {str(getattr(t, "name", "")).strip(): t for t in tools}
             tool = mapping.get(tool_name)
             if tool is None:
                 last_err = "tool missing in fetched list"
-                time.sleep(1)
+                await asyncio.sleep(1)
                 continue
             try:
-                out = asyncio.run(_call_one(tool, payloads[tool_name]))
+                out = await _call_one(tool, payloads[tool_name])
                 results[tool_name] = f"OK: {out}"
                 break
             except Exception as e:
                 last_err = str(e)[:300]
-                time.sleep(1)
+                await asyncio.sleep(1)
         if tool_name not in results:
             results[tool_name] = f"ERR: {last_err}"
     return results
@@ -411,13 +317,13 @@ def smoke_test_selected_tools(max_retries: int = 6) -> dict[str, str]:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "smoke":
-        res = smoke_test_selected_tools()
+        res = asyncio.run(smoke_test_selected_tools())
         for k, v in res.items():
             print(f"{k} => {v}")
         sys.stdout.flush()
         os._exit(0)
 
-    tools = list_mcp_tools(refresh=True)
+    tools = asyncio.run(list_mcp_tools(refresh=True))
     print(f"count={len(tools)}")
     for name in tools:
         print(name)

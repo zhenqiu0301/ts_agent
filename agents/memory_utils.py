@@ -38,11 +38,13 @@ def parse_thread_id_from_delta_key(key: str) -> str:
     return text.split(THREAD_DELTA_SEP, 1)[0].strip()
 
 
-def list_namespace_items(store: Any, namespace: tuple[str, ...], batch_size: int = 100):
+async def list_namespace_items(
+    store: Any, namespace: tuple[str, ...], batch_size: int = 100
+):
     items = []
     offset = 0
     while True:
-        chunk = store.search(namespace, limit=batch_size, offset=offset)
+        chunk = await store.asearch(namespace, limit=batch_size, offset=offset)
         if not chunk:
             break
         items.extend(chunk)
@@ -53,24 +55,26 @@ def list_namespace_items(store: Any, namespace: tuple[str, ...], batch_size: int
     return items
 
 
-def list_delta_items(store: Any, namespace: tuple[str, ...], batch_size: int = 100):
-    items = list_namespace_items(store, namespace, batch_size=batch_size)
+async def list_delta_items(store: Any, namespace: tuple[str, ...], batch_size: int = 100):
+    items = await list_namespace_items(store, namespace, batch_size=batch_size)
     return [it for it in items if is_delta_memory_key(it.key)]
 
 
-def list_thread_delta_items(
+async def list_thread_delta_items(
     store: Any,
     namespace: tuple[str, ...],
     thread_id: str,
     batch_size: int = 100,
 ):
     wanted = (thread_id or "default").strip() or "default"
-    items = list_delta_items(store, namespace, batch_size=batch_size)
+    items = await list_delta_items(store, namespace, batch_size=batch_size)
     return [it for it in items if parse_thread_id_from_delta_key(it.key) == wanted]
 
 
-def load_thread_messages(checkpointer: Any, thread_id: str) -> list[BaseMessage]:
-    checkpoint_tuple = checkpointer.get_tuple({"configurable": {"thread_id": thread_id}})
+async def load_thread_messages(checkpointer: Any, thread_id: str) -> list[BaseMessage]:
+    checkpoint_tuple = await checkpointer.aget_tuple(
+        {"configurable": {"thread_id": thread_id}}
+    )
     if not checkpoint_tuple:
         return []
     values = checkpoint_tuple.checkpoint.get("channel_values", {})
@@ -88,13 +92,13 @@ def messages_to_plain_text(messages: list[BaseMessage]) -> str:
     return "\n".join(lines)
 
 
-def long_memory_to_summary(model: Any, long_memory: str) -> str:
+async def long_memory_to_summary(model: Any, long_memory: str) -> str:
     system_prompt = (
         "你是会话启动摘要助手。请将给定的长期记忆转换为本轮会话可直接使用的历史摘要。\n"
         "输出要求：100-200字中文，不分点，保留稳定约束与关键结论，不要编造。"
     )
     user_prompt = f"长期记忆：{long_memory}\n请输出可用于对话上下文的历史摘要："
-    result = model.invoke(
+    result = await model.ainvoke(
         [
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt),
@@ -104,7 +108,7 @@ def long_memory_to_summary(model: Any, long_memory: str) -> str:
     return text or long_memory
 
 
-def summarize_long_memory_delta(model: Any, messages: list[BaseMessage]) -> str:
+async def summarize_long_memory_delta(model: Any, messages: list[BaseMessage]) -> str:
     conversation = messages_to_plain_text(messages)
     system_prompt = (
         "你是长期记忆增量提炼助手。只基于新增对话提炼稳定、可复用事实。\n"
@@ -113,7 +117,7 @@ def summarize_long_memory_delta(model: Any, messages: list[BaseMessage]) -> str:
         "输出要求：20-100字中文，不分点。若无新增稳定事实，输出“无”。"
     )
     user_prompt = f"新增对话：\n{conversation or '无'}\n请输出长期记忆增量："
-    result = model.invoke(
+    result = await model.ainvoke(
         [
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt),
@@ -123,7 +127,7 @@ def summarize_long_memory_delta(model: Any, messages: list[BaseMessage]) -> str:
     return "" if text == "无" else text
 
 
-def compact_long_memory(model: Any, memory_text: str) -> str:
+async def compact_long_memory(model: Any, memory_text: str) -> str:
     if not memory_text:
         return ""
     system_prompt = (
@@ -133,7 +137,7 @@ def compact_long_memory(model: Any, memory_text: str) -> str:
         "输出要求：200-300字中文，不分点。"
     )
     user_prompt = f"待整理长期记忆：{memory_text}\n请输出整理后的长期记忆："
-    result = model.invoke(
+    result = await model.ainvoke(
         [
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt),
@@ -143,7 +147,9 @@ def compact_long_memory(model: Any, memory_text: str) -> str:
     return text or memory_text
 
 
-def merge_summary(model: Any, old_summary: str, old_messages: list[BaseMessage]) -> str:
+async def merge_summary(
+    model: Any, old_summary: str, old_messages: list[BaseMessage]
+) -> str:
     conversation = messages_to_plain_text(old_messages)
     system_prompt = (
         "你是对话摘要助手，请将历史客服对话压缩为简洁摘要，保留事实与约束。\n"
@@ -157,7 +163,7 @@ def merge_summary(model: Any, old_summary: str, old_messages: list[BaseMessage])
         f"新增历史对话：\n{conversation or '无'}\n"
         "请输出更新后的摘要："
     )
-    result = model.invoke(
+    result = await model.ainvoke(
         [
             SystemMessage(content=system_prompt),
             HumanMessage(content=user_prompt),

@@ -3,7 +3,7 @@ from __future__ import annotations
 from langchain.agents import create_agent
 
 from model.factory import get_chat_model
-from tools.mcp_tools import get_sync_price_compare_mcp_tools
+from tools.mcp_tools import get_price_compare_mcp_tools
 from tools.middleware import (
     after_sales_human_review,
     get_context_summarize,
@@ -38,9 +38,9 @@ after_sales_tools = [
 ]
 
 
-def _merge_tools(internal_tools):
+async def _merge_tools(internal_tools):
     """内部工具 + MCP外部工具拼接，同名优先保留内部工具。"""
-    mcp_tools = get_sync_price_compare_mcp_tools(refresh=False)
+    mcp_tools = await get_price_compare_mcp_tools(refresh=False)
     merged = list(internal_tools)
     internal_names = {str(getattr(t, "name", "")).strip() for t in internal_tools}
     for tool in mcp_tools:
@@ -52,11 +52,15 @@ def _merge_tools(internal_tools):
 
 
 class PurchaseAgent:
-    def __init__(self, checkpointer):
-        tools = _merge_tools(purchase_tools)
+    def __init__(self, agent):
+        self.agent = agent
+
+    @classmethod
+    async def create(cls, checkpointer, model=None):
+        tools = await _merge_tools(purchase_tools)
         # 保留 report_prompt_switch：当上下文标记 report=True 时仍可自动切换到报告提示词
-        self.agent = create_agent(
-            model=get_chat_model(),
+        agent = create_agent(
+            model=model or get_chat_model(),
             system_prompt=load_system_prompts(),
             tools=tools,
             middleware=[
@@ -68,13 +72,18 @@ class PurchaseAgent:
             ],
             checkpointer=checkpointer,
         )
+        return cls(agent)
 
 
 class AfterSalesAgent:
-    def __init__(self, checkpointer):
+    def __init__(self, agent):
+        self.agent = agent
+
+    @classmethod
+    async def create(cls, checkpointer, model=None):
         tools = list(after_sales_tools)
-        self.agent = create_agent(
-            model=get_chat_model(),
+        agent = create_agent(
+            model=model or get_chat_model(),
             system_prompt=load_after_sales_prompts(),
             tools=tools,
             middleware=[
@@ -86,3 +95,4 @@ class AfterSalesAgent:
             ],
             checkpointer=checkpointer,
         )
+        return cls(agent)

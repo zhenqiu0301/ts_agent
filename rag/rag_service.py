@@ -24,18 +24,13 @@ class RagSummarizeService:
         self.model = model or get_chat_model()
         self.chain = self.prompt_template | self.model | StrOutputParser()
 
-    def retriever_docs(self, query: str) -> list[Document]:
-        return self.retriever.invoke(query)
+    async def retriever_docs(self, query: str) -> list[Document]:
+        return await self.retriever.ainvoke(query)
 
-    def rag_summarize(self, query: str) -> str:
-        context_docs = self.retriever_docs(query)
+    async def rag_summarize(self, query: str) -> str:
+        context_docs = await self.retriever_docs(query)
         context = "\n".join(
             f"【参考资料{index}】{doc.page_content} | 元数据：{doc.metadata}"
             for index, doc in enumerate(context_docs, start=1)
         )
-        return self.chain.invoke({"input": query, "context": context})
-
-
-if __name__ == "__main__":
-    service = RagSummarizeService()
-    print(service.rag_summarize("大户型适合哪些扫地机器人"))
+        return await self.chain.ainvoke({"input": query, "context": context})

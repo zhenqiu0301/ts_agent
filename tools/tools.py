@@ -4,7 +4,6 @@ import re
 import uuid
 from contextvars import ContextVar, Token
 from datetime import datetime
-from functools import lru_cache
 from typing import Any
 
 import requests
@@ -17,12 +16,10 @@ from utils.logger_handler import logger
 from utils.path_tool import get_abs_path
 
 
-@lru_cache(maxsize=1)
 def get_rag_service() -> RagSummarizeService:
     return RagSummarizeService()
 
 
-@lru_cache(maxsize=1)
 def get_tavily_search() -> TavilySearch:
     return TavilySearch(max_results=5, topic="general")
 
@@ -58,7 +55,7 @@ def _is_report_context_enabled() -> bool:
 
 
 @tool(parse_docstring=True)
-def web_search(query: str):
+async def web_search(query: str):
     """从互联网检索与商品、价格相关的信息。
 
     Args:
@@ -68,11 +65,11 @@ def web_search(query: str):
         dict | list[dict]: Tavily 原始检索结果，供后续推理与比对使用。
 
     """
-    return get_tavily_search().invoke(query)
+    return await get_tavily_search().ainvoke(query)
 
 
 @tool(parse_docstring=True)
-def rag_summarize(query: str) -> str:
+async def rag_summarize(query: str) -> str:
     """从向量存储中检索并总结参考资料，包括选购、维护、保养、排障等各种问题和知识。
 
     Args:
@@ -83,7 +80,7 @@ def rag_summarize(query: str) -> str:
 
     """
     try:
-        return get_rag_service().rag_summarize(query)
+        return await get_rag_service().rag_summarize(query)
         # return rag_state_graph_agent.invoke(query)
     except requests.exceptions.SSLError as e:
         logger.error(

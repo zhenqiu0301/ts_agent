@@ -24,9 +24,8 @@ def _require_env(name: str) -> str:
     return value
 
 
-@lru_cache(maxsize=1)
 def get_chat_model() -> BaseChatModel:
-    """Create the DeepSeek chat client on first use."""
+    """Create a chat client for the caller's current async event loop."""
 
     return ChatOpenAI(
         model=rag_conf["chat_model_name"],
