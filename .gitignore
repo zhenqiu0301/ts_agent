@@ -1,0 +1,27 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Python environments and generated files
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime output
+logs/
+*.log
+data/db/chroma_db/
+data/db/chroma_manifest.json
+data/db/md5.text
+data/db/*.jsonl
+data/long_memory/
+
+# Editors and macOS
+.DS_Store
+.idea/
+.vscode/
