@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 from langchain_core.embeddings import DeterministicFakeEmbedding
+from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langchain_core.messages import AIMessage
 
 from agents.main_graph_agent import MainGraphAgent
@@ -42,8 +43,22 @@ class PersistenceTests(unittest.IsolatedAsyncioTestCase):
 
 
 class AsyncRouterModel:
-    async def ainvoke(self, _messages):
-        return AIMessage(content="unclear")
+    def __init__(self, route: str = "unclear") -> None:
+        self.route = route
+
+    async def ainvoke(self, _messages, config=None):
+        return AIMessage(content=self.route)
+
+
+class StreamingChildAgent:
+    def __init__(self, response: str) -> None:
+        self.model = FakeListChatModel(responses=[response])
+
+    async def ainvoke(self, _payload, *, context, config):
+        chunks = []
+        async for chunk in self.model.astream("answer", config=config):
+            chunks.append(str(chunk.content))
+        return {"messages": [AIMessage(content="".join(chunks))]}
 
 
 class AsyncExecutionTests(unittest.IsolatedAsyncioTestCase):
@@ -52,16 +67,41 @@ class AsyncExecutionTests(unittest.IsolatedAsyncioTestCase):
             backends = await build_persistent_backends(Path(directory))
             agent = MainGraphAgent(backends, router_model=AsyncRouterModel())
             agent.graph = agent._build_graph()
-            chunks = [
-                chunk
-                async for chunk in agent.execute_stream(
-                    "这是什么",
-                    "async-test",
-                    "user",
-                )
-            ]
-            self.assertIn("请补充", "".join(chunks))
-            await agent.close()
+            try:
+                chunks = [
+                    chunk
+                    async for chunk in agent.execute_stream(
+                        "这是什么",
+                        "async-test",
+                        "user",
+                    )
+                ]
+                self.assertIn("请补充", "".join(chunks))
+            finally:
+                await agent.close()
+
+    async def test_purchase_response_is_streamed_as_model_chunks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            backends = await build_persistent_backends(Path(directory))
+            agent = MainGraphAgent(backends, router_model=AsyncRouterModel("purchase"))
+            agent.purchase_agent = StreamingChildAgent("流式回答")
+            agent.graph = agent._build_graph()
+            events = []
+            try:
+                chunks = [
+                    chunk
+                    async for chunk in agent.execute_stream(
+                        "帮我选一台",
+                        "stream-test",
+                        "user",
+                        event_callback=events.append,
+                    )
+                ]
+                self.assertGreater(len(chunks), 1)
+                self.assertEqual("".join(chunks), "流式回答")
+                self.assertTrue(any(event["type"] == "nodes" for event in events))
+            finally:
+                await agent.close()
 
 
 class RoutingTests(unittest.TestCase):
@@ -75,6 +115,15 @@ class RoutingTests(unittest.TestCase):
             {"type": "reject", "message": "用户暂不执行敏感售后操作，继续在线处理。"},
         )
         self.assertIsNone(MainGraphAgent._parse_ticket_review_decision("再考虑一下"))
+
+    def test_pending_action_is_stored_as_structured_state(self) -> None:
+        state = MainGraphAgent._build_review_state(
+            [{"name": "create_purchase_order", "args": {"product_model": "X1"}}]
+        )
+        self.assertEqual(state["status"], "awaiting_review")
+        self.assertEqual(state["count"], 1)
+        self.assertEqual(state["tools"], ["create_purchase_order"])
+        self.assertEqual(state["actions"][0]["args"]["product_model"], "X1")
 
 
 class FileDiscoveryTests(unittest.TestCase):

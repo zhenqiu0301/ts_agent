@@ -1,6 +1,9 @@
+import csv
+import hashlib
 import json
 import os
 import re
+import threading
 import uuid
 from contextvars import ContextVar, Token
 from datetime import datetime
@@ -28,6 +31,7 @@ _TOOL_RUNTIME_CONTEXT: ContextVar[dict[str, Any] | None] = ContextVar(
     "tool_runtime_context", default=None
 )
 external_data: dict[str, dict[str, dict[str, str]]] = {}
+_BUSINESS_WRITE_LOCK = threading.Lock()
 
 
 def set_tool_runtime_context(context: dict[str, Any]) -> Token:
@@ -52,6 +56,55 @@ def _normalize_month(month: str) -> str:
 
 def _is_report_context_enabled() -> bool:
     return bool(_runtime_context().get("report", False))
+
+
+def _validate_text(value: str, field: str, *, max_length: int = 500) -> str:
+    cleaned = str(value or "").strip()
+    if not cleaned:
+        raise ValueError(f"{field} 不能为空")
+    if len(cleaned) > max_length:
+        raise ValueError(f"{field} 长度不能超过 {max_length} 个字符")
+    return cleaned
+
+
+def _validate_phone(value: str) -> str:
+    cleaned = re.sub(r"[\s-]+", "", str(value or ""))
+    if not re.fullmatch(r"\+?\d{7,20}", cleaned):
+        raise ValueError("phone 格式不合法，请提供 7-20 位数字（可含+号）")
+    return cleaned
+
+
+def _idempotency_key(action: str, payload: dict[str, Any]) -> str:
+    context = _runtime_context()
+    identity = {
+        "action": action,
+        "user_id": str(context.get("user_id", "")).strip() or DEFAULT_USER_ID,
+        "thread_id": str(context.get("thread_id", "")).strip(),
+        "payload": payload,
+    }
+    raw = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _append_business_record(path: str, record: dict[str, Any]) -> dict[str, Any] | None:
+    """幂等写入业务记录；重试时返回已有记录而不重复创建。"""
+
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    with _BUSINESS_WRITE_LOCK:
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as file:
+                for line in file:
+                    try:
+                        existing = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if existing.get("idempotency_key") == record["idempotency_key"]:
+                        return existing
+        with open(path, "a", encoding="utf-8") as file:
+            file.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return None
 
 
 @tool(parse_docstring=True)
@@ -127,15 +180,12 @@ def create_after_sales_ticket(summary: str, symptoms: str, phone: str) -> str:
         str: 包含工单号、受理时间及关键信息的确认文本。
 
     """
-    clean_summary = str(summary or "").strip()
-    clean_symptoms = str(symptoms or "").strip()
-    clean_phone = re.sub(r"\s+", "", str(phone or ""))
-
-    if not clean_summary or not clean_symptoms or not clean_phone:
-        return "工单创建失败：summary、symptoms、phone 不能为空。"
-
-    if not re.fullmatch(r"\+?\d{7,20}", clean_phone):
-        return "工单创建失败：phone 格式不合法，请提供 7-20 位数字（可含+号）。"
+    try:
+        clean_summary = _validate_text(summary, "summary", max_length=200)
+        clean_symptoms = _validate_text(symptoms, "symptoms", max_length=1000)
+        clean_phone = _validate_phone(phone)
+    except ValueError as exc:
+        return f"工单创建失败：{exc}。"
 
     now = datetime.now()
     ticket_id = f"AS-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
@@ -153,18 +203,22 @@ def create_after_sales_ticket(summary: str, symptoms: str, phone: str) -> str:
         "phone": clean_phone,
         "status": "created",
     }
+    ticket_record["idempotency_key"] = _idempotency_key(
+        "after_sales_ticket",
+        {"summary": clean_summary, "symptoms": clean_symptoms, "phone": clean_phone},
+    )
 
     ticket_store_path = get_abs_path(
         os.getenv("TS_AFTER_SALES_TICKET_PATH", "data/db/after_sales_tickets.jsonl")
     )
     try:
-        os.makedirs(os.path.dirname(ticket_store_path), exist_ok=True)
-        with open(ticket_store_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(ticket_record, ensure_ascii=False) + "\n")
+        existing = _append_business_record(ticket_store_path, ticket_record)
     except OSError as e:
         logger.error(f"[create_after_sales_ticket]工单落盘失败: {e}", exc_info=True)
         return "工单创建失败：写入工单存储时发生异常，请稍后重试。"
 
+    if existing:
+        return f"重复请求已识别，未重复创建。已有工单号：{existing['ticket_id']}。"
     return (
         f"工单已创建。工单号：{ticket_id}；受理时间：{created_at}；"
         f"问题摘要：{clean_summary}；症状：{clean_symptoms}；回访电话：{clean_phone}。"
@@ -192,17 +246,15 @@ def create_purchase_order(
         str: 订单创建结果与关键信息。
 
     """
-    clean_model = str(product_model or "").strip()
-    clean_consignee = str(consignee or "").strip()
-    clean_phone = re.sub(r"\s+", "", str(phone or ""))
-    clean_address = str(address or "").strip()
-
-    if not clean_model or not clean_consignee or not clean_phone or not clean_address:
-        return "订单创建失败：product_model、consignee、phone、address 不能为空。"
-    if not isinstance(quantity, int) or quantity <= 0:
-        return "订单创建失败：quantity 必须为大于0的整数。"
-    if not re.fullmatch(r"\+?\d{7,20}", clean_phone):
-        return "订单创建失败：phone 格式不合法，请提供 7-20 位数字（可含+号）。"
+    try:
+        clean_model = _validate_text(product_model, "product_model", max_length=100)
+        clean_consignee = _validate_text(consignee, "consignee", max_length=100)
+        clean_phone = _validate_phone(phone)
+        clean_address = _validate_text(address, "address", max_length=500)
+        if isinstance(quantity, bool) or not isinstance(quantity, int) or not 1 <= quantity <= 20:
+            raise ValueError("quantity 必须是 1-20 的整数")
+    except ValueError as exc:
+        return f"订单创建失败：{exc}。"
 
     now = datetime.now()
     order_id = f"PO-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
@@ -221,18 +273,28 @@ def create_purchase_order(
         "address": clean_address,
         "status": "created",
     }
+    record["idempotency_key"] = _idempotency_key(
+        "purchase_order",
+        {
+            "product_model": clean_model,
+            "quantity": quantity,
+            "consignee": clean_consignee,
+            "phone": clean_phone,
+            "address": clean_address,
+        },
+    )
 
     path = get_abs_path(
         os.getenv("TS_PURCHASE_ORDER_PATH", "data/db/purchase_orders.jsonl")
     )
     try:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        existing = _append_business_record(path, record)
     except OSError as e:
         logger.error(f"[create_purchase_order]订单落盘失败: {e}", exc_info=True)
         return "订单创建失败：写入订单存储时发生异常，请稍后重试。"
 
+    if existing:
+        return f"重复请求已识别，未重复下单。已有订单号：{existing['order_id']}。"
     return (
         f"订单已创建。订单号：{order_id}；下单时间：{created_at}；"
         f"型号：{clean_model}；数量：{quantity}；收货人：{clean_consignee}；"
@@ -259,15 +321,13 @@ def create_manual_return_request(
         str: 退货申请单创建结果与关键信息。
 
     """
-    clean_reason = str(reason or "").strip()
-    clean_model = str(product_model or "").strip()
-    clean_phone = re.sub(r"\s+", "", str(phone or ""))
-    clean_address = str(address or "").strip()
-
-    if not clean_reason or not clean_model or not clean_phone or not clean_address:
-        return "退货申请创建失败：reason、product_model、phone、address 不能为空。"
-    if not re.fullmatch(r"\+?\d{7,20}", clean_phone):
-        return "退货申请创建失败：phone 格式不合法，请提供 7-20 位数字（可含+号）。"
+    try:
+        clean_reason = _validate_text(reason, "reason", max_length=500)
+        clean_model = _validate_text(product_model, "product_model", max_length=100)
+        clean_phone = _validate_phone(phone)
+        clean_address = _validate_text(address, "address", max_length=500)
+    except ValueError as exc:
+        return f"退货申请创建失败：{exc}。"
 
     now = datetime.now()
     request_id = f"RT-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
@@ -285,20 +345,29 @@ def create_manual_return_request(
         "address": clean_address,
         "status": "pending_manual_review",
     }
+    record["idempotency_key"] = _idempotency_key(
+        "return_request",
+        {
+            "reason": clean_reason,
+            "product_model": clean_model,
+            "phone": clean_phone,
+            "address": clean_address,
+        },
+    )
 
     path = get_abs_path(
         os.getenv("TS_AFTER_SALES_RETURN_PATH", "data/db/after_sales_returns.jsonl")
     )
     try:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        existing = _append_business_record(path, record)
     except OSError as e:
         logger.error(
             f"[create_manual_return_request]退货申请落盘失败: {e}", exc_info=True
         )
         return "退货申请创建失败：写入退货申请存储时发生异常，请稍后重试。"
 
+    if existing:
+        return f"重复请求已识别，未重复申请。已有申请单号：{existing['request_id']}。"
     return (
         f"人工退货申请已创建。申请单号：{request_id}；受理时间：{created_at}；"
         f"型号：{clean_model}；原因：{clean_reason}；联系电话：{clean_phone}；"
@@ -325,18 +394,16 @@ def generate_external_data():
         if not os.path.exists(external_data_path):
             raise FileNotFoundError(f"外部数据文件{external_data_path}不存在")
 
-        with open(external_data_path, encoding="utf-8") as f:
-            for line in f.readlines()[1:]:
-                arr: list[str] = line.strip().split(",")
-                if len(arr) < 6:
+        with open(external_data_path, encoding="utf-8", newline="") as file:
+            for row in csv.DictReader(file):
+                user_id = str(row.get("用户ID", "")).strip()
+                feature = str(row.get("特征", "")).strip()
+                efficiency = str(row.get("清洁效率", "")).strip()
+                consumables = str(row.get("耗材", "")).strip()
+                comparison = str(row.get("对比", "")).strip()
+                time = str(row.get("时间", "")).strip()
+                if not user_id or not time:
                     continue
-
-                user_id: str = arr[0].replace('"', "")
-                feature: str = arr[1].replace('"', "")
-                efficiency: str = arr[2].replace('"', "")
-                consumables: str = arr[3].replace('"', "")
-                comparison: str = arr[4].replace('"', "")
-                time: str = arr[5].replace('"', "")
 
                 if user_id not in external_data:
                     external_data[user_id] = {}
@@ -406,5 +473,6 @@ def fill_context_for_report() -> str:
 
     """
     context = _runtime_context()
+    context["report"] = True
     user_id = str(context.get("user_id", "")).strip() or DEFAULT_USER_ID
     return f"fill_context_for_report已调用，报告上下文已激活（user_id={user_id}）"

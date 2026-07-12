@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+from collections.abc import Callable
 from datetime import datetime
 from typing import Annotated, Any, TypedDict
 
@@ -135,6 +136,26 @@ class MainGraphAgent:
             return {"type": "reject", "message": "用户暂不执行敏感售后操作，继续在线处理。"}
         return None
 
+    @staticmethod
+    def _build_review_state(action_requests: list[Any]) -> dict[str, Any]:
+        """将待审批工具调用保存为显式、可恢复的业务状态。"""
+
+        actions = []
+        for action in action_requests:
+            if not isinstance(action, dict):
+                continue
+            name = str(action.get("name", "")).strip()
+            args = action.get("args", {})
+            if name:
+                actions.append({"name": name, "args": args if isinstance(args, dict) else {}})
+        return {
+            "status": "awaiting_review",
+            "count": len(actions) or 1,
+            "tools": [action["name"] for action in actions],
+            "actions": actions,
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+
     def _build_graph(self):
         builder = StateGraph(MainGraphState)
 
@@ -223,7 +244,8 @@ class MainGraphAgent:
             "只输出一个标签：purchase、after_sales 或 unclear，不要输出其他内容。"
         )
         result = await self.router_model.ainvoke(
-            [SystemMessage(content=system_prompt), *query]
+            [SystemMessage(content=system_prompt), *query],
+            config={"tags": ["router"]},
         )
         text = (result.content or "").strip().lower()
 
@@ -279,15 +301,17 @@ class MainGraphAgent:
         else:
             payload = {"messages": self._build_messages(state)}
 
+        child_config = dict(config)
+        child_config["tags"] = [*config.get("tags", []), "user-response"]
+        child_config["configurable"] = {
+            **configurable,
+            "thread_id": sub_thread_id,
+            "user_id": user_id,
+        }
         result = await self.purchase_agent.ainvoke(
             payload,
             context={"route": "purchase", "report": False},
-            config={
-                "configurable": {
-                    "thread_id": sub_thread_id,
-                    "user_id": user_id,
-                }
-            },
+            config=child_config,
         )
 
         interrupts = result.get("__interrupt__")
@@ -296,16 +320,12 @@ class MainGraphAgent:
             payload = getattr(first_interrupt, "value", None)
             if isinstance(payload, dict):
                 action_requests = payload.get("action_requests", [])
-                tool_names = []
-                for action in action_requests:
-                    if isinstance(action, dict):
-                        name = str(action.get("name", "")).strip()
-                        if name:
-                            tool_names.append(name)
+                review_state = self._build_review_state(action_requests)
+                tool_names = review_state["tools"]
                 await self._save_pending_review(
                     "purchase",
                     sub_thread_id,
-                    {"count": len(action_requests) or 1, "tools": tool_names},
+                    review_state,
                 )
                 logger.info(
                     "[hitl] 触发人工审批，thread_id=%s，count=%s，tools=%s",
@@ -370,10 +390,17 @@ class MainGraphAgent:
         else:
             payload = {"messages": self._build_messages(state)}
 
+        child_config = dict(config)
+        child_config["tags"] = [*config.get("tags", []), "user-response"]
+        child_config["configurable"] = {
+            **configurable,
+            "thread_id": sub_thread_id,
+            "user_id": user_id,
+        }
         result = await self.after_sales_agent.ainvoke(
             payload,
             context={"route": "after_sales", "report": False},
-            config={"configurable": {"thread_id": sub_thread_id, "user_id": user_id}},
+            config=child_config,
         )
 
         interrupts = result.get("__interrupt__")
@@ -382,16 +409,12 @@ class MainGraphAgent:
             payload = getattr(first_interrupt, "value", None)
             if isinstance(payload, dict):
                 action_requests = payload.get("action_requests", [])
-                tool_names = []
-                for action in action_requests:
-                    if isinstance(action, dict):
-                        name = str(action.get("name", "")).strip()
-                        if name:
-                            tool_names.append(name)
+                review_state = self._build_review_state(action_requests)
+                tool_names = review_state["tools"]
                 await self._save_pending_review(
                     "after_sales",
                     sub_thread_id,
-                    {"count": len(action_requests) or 1, "tools": tool_names},
+                    review_state,
                 )
                 logger.info(
                     "[hitl] 触发人工审批，thread_id=%s，count=%s，tools=%s",
@@ -545,8 +568,10 @@ class MainGraphAgent:
         thread_id: str,
         user_id: str = "default_user",
         bootstrap_summary: str | None = None,
+        event_callback: Callable[[dict[str, Any]], None] | None = None,
     ):
-        last_emitted = ""
+        streamed_text = ""
+        final_response = ""
         user_msg = HumanMessage(content=query)
         input_payload: dict = {
             "recent_messages": [user_msg],
@@ -556,21 +581,39 @@ class MainGraphAgent:
         if bootstrap_summary is not None:
             input_payload["summary"] = bootstrap_summary
 
-        async for chunk in self.graph.astream(
+        async for mode, data in self.graph.astream(
             # 重置 response，避免新一轮开始时复用上轮持久化状态里的旧回答。
             input_payload,
-            stream_mode="values",
+            stream_mode=["messages", "updates", "values"],
             config={"configurable": {"thread_id": thread_id, "user_id": user_id}},
         ):
-            text = chunk.get("response", "").strip()
-            if not text:
-                continue
+            if mode == "messages":
+                chunk, metadata = data
+                tags = metadata.get("tags", []) if isinstance(metadata, dict) else []
+                content = getattr(chunk, "content", "")
+                tool_chunks = getattr(chunk, "tool_call_chunks", []) or []
+                if tool_chunks and event_callback:
+                    names = [item.get("name") for item in tool_chunks if item.get("name")]
+                    if names:
+                        event_callback({"type": "tools", "names": names})
+                if (
+                    "user-response" in tags
+                    and not tool_chunks
+                    and isinstance(content, str)
+                    and content
+                ):
+                    streamed_text += content
+                    yield content
+            elif mode == "updates" and isinstance(data, dict):
+                if event_callback:
+                    event_callback({"type": "nodes", "names": list(data)})
+            elif mode == "values" and isinstance(data, dict):
+                final_response = str(data.get("response", "") or "").strip()
 
-            if text.startswith(last_emitted):
-                delta = text[len(last_emitted) :]
-            else:
-                delta = text
-
-            if delta:
-                yield delta
-                last_emitted = text
+        if final_response and final_response != streamed_text:
+            if final_response.startswith(streamed_text):
+                remainder = final_response[len(streamed_text) :]
+                if remainder:
+                    yield remainder
+            elif not streamed_text:
+                yield final_response

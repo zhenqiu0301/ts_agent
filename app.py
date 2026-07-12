@@ -106,6 +106,22 @@ if prompt:
 
     response_messages = []
     with st.spinner("智能客服思考中..."):
+        progress = st.status("正在识别用户意图...", expanded=False)
+
+        def show_event(event):
+            if event.get("type") == "tools":
+                progress.update(label=f"正在调用工具：{', '.join(event['names'])}")
+                return
+            node_labels = {
+                "analyze": "已完成意图识别",
+                "purchase": "正在处理选购需求",
+                "after_sales": "正在处理售后需求",
+                "summarize": "正在更新会话记忆",
+            }
+            names = event.get("names", [])
+            if names:
+                progress.update(label=node_labels.get(names[-1], "正在生成回答"))
+
         async def capture(cache_list):
             agent = await MainGraphAgent.create()
             try:
@@ -121,6 +137,7 @@ if prompt:
                     st.session_state["thread_id"],
                     st.session_state["user_id"],
                     st.session_state.get("pending_bootstrap_summary"),
+                    event_callback=show_event,
                 ):
                     cache_list.append(chunk)
                     yield chunk
@@ -128,6 +145,7 @@ if prompt:
                 await agent.close()
 
         st.chat_message("assistant").write_stream(capture(response_messages))
+        progress.update(label="回答已完成", state="complete")
         full_response = "".join(response_messages).strip()
         st.session_state["pending_bootstrap_summary"] = None
         st.session_state["message"].append(

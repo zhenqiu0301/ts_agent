@@ -11,7 +11,9 @@ from typing import Any
 from urllib.parse import urlparse
 
 import yaml
+from langchain_core.tools import StructuredTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from pydantic import BaseModel, Field
 
 if __package__ is None or __package__ == "":
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -274,6 +276,45 @@ async def get_price_compare_mcp_tools(refresh: bool = False) -> list[Any]:
     """获取白名单过滤后的原生异步 MCP 工具。"""
     raw = await get_mcp_tool_objects(refresh=refresh)
     return _keep_price_compare_tools_by_whitelist(raw)
+
+
+class PriceSearchInput(BaseModel):
+    keyword: str = Field(min_length=1, max_length=100, description="商品型号或搜索关键词")
+
+
+async def _invoke_price_tool(tool_name: str, keyword: str) -> str:
+    """在首次真正比价时才连接 MCP，避免普通对话承担启动开销。"""
+
+    tools = await get_price_compare_mcp_tools(refresh=False)
+    mapping = {str(getattr(tool, "name", "")).strip(): tool for tool in tools}
+    selected = mapping.get(tool_name)
+    if selected is None:
+        return f"[MCP:{tool_name}] 当前不可用，请按规则使用 web_search 兜底。"
+    try:
+        return str(await selected.ainvoke({"keyword": keyword}))
+    except Exception as exc:
+        return f"[MCP:{tool_name}] 调用失败：{_format_compact_error(exc)}"
+
+
+def _lazy_price_tool(tool_name: str, description: str) -> StructuredTool:
+    async def invoke(keyword: str) -> str:
+        return await _invoke_price_tool(tool_name, keyword)
+
+    return StructuredTool.from_function(
+        coroutine=invoke,
+        name=tool_name,
+        description=description,
+        args_schema=PriceSearchInput,
+    )
+
+
+def get_lazy_price_compare_tools() -> list[StructuredTool]:
+    """返回不在 Agent 创建阶段连接外部 MCP 的延迟代理工具。"""
+
+    return [
+        _lazy_price_tool("jd.goods.query", "按关键词查询京东商品与价格。"),
+        _lazy_price_tool("pdd.goods.search", "按关键词查询拼多多商品与价格。"),
+    ]
 
 
 async def smoke_test_selected_tools(max_retries: int = 6) -> dict[str, str]:
