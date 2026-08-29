@@ -9,11 +9,16 @@ from langchain_core.prompts import PromptTemplate
 
 from ts_agent.model.factory import get_chat_model
 from ts_agent.rag.vector_store import VectorStoreService
-from ts_agent.utils.logger_handler import logger
 from ts_agent.utils.prompt_loader import load_rag_prompts
 
 
 class RagSummarizeService:
+    """RAG 检索总结服务。
+
+    故意不提供 close()：同 base_url 的 ChatOpenAI 底层 httpx 客户端在事件循环内
+    共享，请求路径上关闭会毒化其他模型调用；客户端随进程生命周期管理。
+    """
+
     def __init__(
         self,
         vector_store: VectorStoreService | None = None,
@@ -24,17 +29,6 @@ class RagSummarizeService:
         self.prompt_template = PromptTemplate.from_template(load_rag_prompts())
         self.model = model or get_chat_model()
         self.chain = self.prompt_template | self.model | StrOutputParser()
-
-    async def close(self) -> None:
-        """关闭模型持有的异步 httpx client；可安全重复调用。"""
-        client = getattr(self.model, "root_async_client", None)
-        close = getattr(client, "close", None)
-        if not callable(close):
-            return
-        try:
-            await close()
-        except Exception as e:
-            logger.debug(f"[rag service]关闭模型客户端失败: {e}")
 
     async def retriever_docs(self, query: str) -> list[Document]:
         return await self.retriever.ainvoke(query)

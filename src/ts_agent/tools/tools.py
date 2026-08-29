@@ -30,8 +30,9 @@ def _get_shared_vector_store() -> VectorStoreService:
 
 
 def get_rag_service() -> RagSummarizeService:
-    # ChatOpenAI 的异步 httpx client 绑定创建时的事件循环，须按调用新建并在用后关闭，
-    # 不能整体缓存服务实例。
+    # 只共享向量库（Chroma/embeddings 为同步实现）；ChatOpenAI 实例按调用新建。
+    # 注意：同 base_url 的 ChatOpenAI 底层 httpx 客户端按事件循环共享，
+    # 因此严禁在请求路径关闭模型客户端，否则同一循环内后续模型调用全部失败。
     return RagSummarizeService(vector_store=_get_shared_vector_store())
 
 
@@ -160,8 +161,6 @@ async def rag_summarize(query: str) -> str:
     except Exception as e:
         logger.error(f"[rag_summarize]执行失败: {str(e)}", exc_info=True)
         return "检索总结暂时不可用，请稍后重试。"
-    finally:
-        await service.close()
 
 
 @tool(parse_docstring=True)

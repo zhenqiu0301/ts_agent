@@ -4496,6 +4496,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "requests" },
+    { name = "sse-starlette" },
     { name = "streamlit" },
     { name = "uvicorn" },
 ]
@@ -4527,6 +4528,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32,<3" },
+    { name = "sse-starlette", specifier = ">=3,<4" },
     { name = "streamlit", specifier = ">=1.49.0" },
     { name = "uvicorn", specifier = ">=0.35.0" },
 ]

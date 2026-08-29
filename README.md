@@ -1,9 +1,20 @@
 # TS Agent 智能客服
 
-基于 LangGraph、DeepSeek、DashScope Embedding、Chroma 和 Streamlit 的智能客服示例，包含选购咨询、售后处理、RAG 知识检索、人工审批和长期记忆。
+基于 LangGraph、DeepSeek、DashScope Embedding、Chroma 的智能客服示例，包含选购咨询、售后处理、RAG 知识检索、人工审批和长期记忆。
+项目采用服务端/客户端架构：FastAPI 服务端持有共享 Agent 并通过 SSE 流式推送回答与进度事件，Streamlit 作为客户端负责渲染。
 模型、子 Agent、MCP 工具、流式输出和 SQLite 持久化使用原生异步调用链。
 回答支持 Token 级流式展示和节点/工具进度事件；外部比价 MCP 仅在真正调用价格工具时延迟连接。
 下单、售后工单和退货申请具有参数校验、显式审批状态和线程级幂等写入保护。
+
+## 架构
+
+```text
+浏览器 ──► Streamlit 客户端(8501) ──HTTP/SSE──► FastAPI 服务端(8000)
+                                              ├─ 共享 MainGraphAgent
+                                              ├─ SQLite checkpoint/store
+                                              ├─ Chroma 向量库
+                                              └─ 外部 MCP（延迟连接）
+```
 
 ## 环境要求
 
@@ -18,8 +29,29 @@
 cp .env.example .env
 # 编辑 .env，填入本地密钥
 uv sync
-./start.sh
+
+# 终端 1：启动 API 服务端（默认 127.0.0.1:8000）
+./start_server.sh
+
+# 终端 2：启动 Streamlit 客户端（默认 8501）
+./start_client.sh
 ```
+
+服务端地址与端口通过 `TS_AGENT_API_HOST` / `TS_AGENT_API_PORT` 覆盖；客户端要连接的服务端地址通过 `TS_AGENT_API_URL` 覆盖（未设置时按同一组 host/port 变量拼出默认值）。
+
+## HTTP API
+
+服务端启动后可访问 `http://127.0.0.1:8000/docs` 查看交互式文档。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/health` | 健康检查 |
+| POST | `/api/chat` | 对话（SSE 流式：chunk/node/tool/done/error 事件） |
+| GET | `/api/memory/{user_id}` | 查看用户长期记忆 |
+| DELETE | `/api/memory/{user_id}` | 清除用户长期记忆 |
+| POST | `/api/session/finalize` | 结束会话并整理长期记忆 |
+
+客户端通过 `TS_AGENT_API_URL` 指定服务端地址（默认 `http://127.0.0.1:8000`）；服务端 CORS 白名单通过 `TS_AGENT_ALLOWED_ORIGINS` 配置（默认仅允许本机 Streamlit 来源）。
 
 `.env`、虚拟环境、日志、Chroma 索引、SQLite 记忆和业务 JSONL 均为本地运行数据，不会提交到 Git。
 
@@ -32,17 +64,18 @@ uv sync
 如果本地不需要外部 MCP，可在启动前禁用：
 
 ```bash
-MCP_DISABLE_EXTERNAL=1 ./start.sh
+MCP_DISABLE_EXTERNAL=1 ./start_server.sh
 ```
 
 ## 主要结构
 
 ```text
-src/ts_agent/  主图、子 Agent、RAG、工具、Prompt 和内置 MCP
-config/        模型、RAG、Prompt 路径和 MCP 外部配置
-data/          知识文档与本地运行数据
-tests/         不依赖真实模型请求的测试
-app.py         Streamlit 应用入口
+src/ts_agent/          主图、子 Agent、RAG、工具、Prompt 和内置 MCP
+src/ts_agent/server/   FastAPI 服务端（SSE 流式 API）
+config/                模型、RAG、Prompt 路径和 MCP 外部配置
+data/                  知识文档与本地运行数据
+tests/                 不依赖真实模型请求的测试
+app.py                 Streamlit 客户端入口
 ```
 
 ## 工作流与记忆
@@ -51,6 +84,7 @@ app.py         Streamlit 应用入口
 - 审批动作使用 `awaiting_review -> executing -> completed/failed` 状态机，失败时保留恢复信息。
 - 比价和使用报告由确定性组合工具保证调用顺序，不依赖模型自行编排关键步骤。
 - 长期记忆分为结构化用户画像和业务事件，包含来源、可信度、敏感级别和有效期。
+- 长期记忆按用户 ID 隔离；在客户端侧边栏修改"用户 ID"即可切换身份（会自动开启新会话）。
 - 新对话按当前问题检索 Top-5 相关记忆；用户可在侧边栏查看或清除长期记忆。
 
 ## 知识库索引
