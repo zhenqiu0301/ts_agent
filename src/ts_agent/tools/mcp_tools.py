@@ -6,6 +6,7 @@ import os
 import shutil
 import socket
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -58,7 +59,9 @@ class MCPToolLister:
         self._client: MultiServerMCPClient | None = None
         self._tool_names: list[str] = []
         self._tool_objects: list[Any] = []
-        self._lock = asyncio.Lock()
+        # threading.Lock 只保护同步状态读写、绝不跨 await 持有：
+        # Streamlit 每次渲染都会新建事件循环，跨循环争用 asyncio.Lock 会抛 RuntimeError。
+        self._state_guard = threading.Lock()
         self._max_retries = int(os.getenv("MCP_MAX_RETRIES", "3") or "3")
         self._failure_count = 0
         self._disabled = False
@@ -189,53 +192,73 @@ class MCPToolLister:
             logger.warning(f"[mcp_tools] 读取配置失败: {str(e)}")
             return {}
 
+    def _is_disabled_now(self) -> bool:
+        with self._state_guard:
+            return self._is_temporarily_disabled()
+
+    def _cached_names(self) -> list[str]:
+        with self._state_guard:
+            return list(self._tool_names)
+
+    def _cached_objects(self) -> list[Any]:
+        with self._state_guard:
+            return list(self._tool_objects)
+
     async def _refresh_async(self) -> list[str]:
-        if self._is_temporarily_disabled():
+        if self._is_disabled_now():
             return []
         servers = self._load_servers()
         if not servers:
-            self._mark_failure("无可用MCP server配置")
+            with self._state_guard:
+                self._mark_failure("无可用MCP server配置")
             return []
+        with self._state_guard:
+            client = self._client
+        if client is None:
+            # 每次刷新各用各的 client，结束后在锁内发布，绝不跨 await 持锁
+            client = MultiServerMCPClient(servers)
         try:
-            if self._client is None:
-                self._client = MultiServerMCPClient(servers)
-            tools = await asyncio.wait_for(self._client.get_tools(), timeout=self.timeout_seconds)
+            tools = await asyncio.wait_for(
+                client.get_tools(), timeout=self.timeout_seconds
+            )
         except Exception as e:
-            self._mark_failure(_format_compact_error(e))
-            # 常见断链异常下重建 client，避免后续重试一直复用坏连接。
-            self._client = None
+            reason = _format_compact_error(e)
+            with self._state_guard:
+                # 常见断链异常下重建 client，避免后续重试一直复用坏连接；
+                # 仅当仍是同一实例时才重置，防止覆盖并发刷新发布的新 client。
+                if self._client is client:
+                    self._client = None
+                self._mark_failure(reason)
             return []
-        self._mark_success()
-        self._tool_objects = list(tools)
-        names = []
-        for tool in tools:
-            name = str(getattr(tool, "name", "")).strip()
-            if name:
-                names.append(name)
-        self._tool_names = sorted(set(names))
-        if self._tool_names:
+        with self._state_guard:
+            self._client = client
+            self._mark_success()
+            self._tool_objects = list(tools)
+            names = sorted(
+                {
+                    str(getattr(tool, "name", "")).strip()
+                    for tool in tools
+                    if str(getattr(tool, "name", "")).strip()
+                }
+            )
+            self._tool_names = names
+        if names:
             logger.info("[mcp_tools] 已拉取外部 MCP 工具列表:")
-            for name in self._tool_names:
+            for name in names:
                 logger.info(f"[mcp_tools] - {name}")
         else:
             logger.info("[mcp_tools] 外部 MCP 工具列表为空。")
-        return self._tool_names
+        return list(names)
 
     async def list_tools(self, refresh: bool = False) -> list[str]:
-        async with self._lock:
-            if self._is_temporarily_disabled():
-                return []
-            if refresh or not self._tool_names:
-                return await self._refresh_async()
-            return list(self._tool_names)
+        if refresh or not self._cached_names():
+            return await self._refresh_async()
+        return self._cached_names()
 
     async def get_tool_objects(self, refresh: bool = False) -> list[Any]:
-        async with self._lock:
-            if self._is_temporarily_disabled():
-                return []
-            if refresh or not self._tool_objects:
-                await self._refresh_async()
-            return list(self._tool_objects)
+        if refresh or not self._cached_objects():
+            await self._refresh_async()
+        return self._cached_objects()
 
 
 _lister = MCPToolLister()

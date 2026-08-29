@@ -1,12 +1,10 @@
 import os
 from collections.abc import Callable
-from functools import lru_cache
 
 from langchain.agents import AgentState
 from langchain.agents.middleware import (
     HumanInTheLoopMiddleware,
     ModelRequest,
-    SummarizationMiddleware,
     before_model,
     dynamic_prompt,
     wrap_tool_call,
@@ -16,26 +14,14 @@ from langchain_core.messages import ToolMessage
 from langgraph.runtime import Runtime
 from langgraph.types import Command
 
-from ts_agent.model.factory import get_chat_model
 from ts_agent.tools.tools import reset_tool_runtime_context, set_tool_runtime_context
 from ts_agent.utils.logger_handler import logger
 from ts_agent.utils.prompt_loader import (
     load_after_sales_prompts,
     load_purchase_prompts,
     load_report_prompts,
-    load_summary_prompts,
     load_system_prompts,
 )
-
-
-@lru_cache(maxsize=1)
-def get_context_summarize() -> SummarizationMiddleware:
-    return SummarizationMiddleware(
-        model=get_chat_model(),
-        trigger=("messages", 20),
-        keep=("messages", 10),
-        summary_prompt=load_summary_prompts(),
-    )
 
 
 def _safe_preview_content(content) -> str:

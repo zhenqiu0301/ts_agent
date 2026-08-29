@@ -42,6 +42,31 @@ def messages_to_plain_text(messages: list[BaseMessage], *, redact: bool = True) 
     return "\n".join(lines)
 
 
+_BUDGET_UNIT_MULTIPLIERS = {
+    "万": 10_000,
+    "w": 10_000,
+    "W": 10_000,
+    "千": 1_000,
+    "k": 1_000,
+    "K": 1_000,
+    "百": 100,
+}
+
+_BUDGET_PATTERN = re.compile(
+    r"预算[^\d]{0,8}(\d{1,8}(?:\.\d{1,2})?)(?!\d)\s*([万千百wWkK])?"
+)
+
+
+def _extract_budget_cny(text: str) -> int | None:
+    """提取预算并按中文数量单位换算成元，如“预算100万”→1000000。"""
+    match = _BUDGET_PATTERN.search(text)
+    if not match:
+        return None
+    amount = float(match.group(1))
+    multiplier = _BUDGET_UNIT_MULTIPLIERS.get(match.group(2) or "", 1)
+    return int(round(amount * multiplier))
+
+
 def _extract_profile_candidates(messages: list[BaseMessage], thread_id: str) -> list[dict]:
     text = "\n".join(
         str(message.content) for message in messages if isinstance(message, HumanMessage)
@@ -50,9 +75,9 @@ def _extract_profile_candidates(messages: list[BaseMessage], thread_id: str) -> 
     area = re.search(r"(\d{2,3})\s*(?:㎡|平方米|平)", text)
     if area:
         candidates["home_area_sqm"] = int(area.group(1))
-    budget = re.search(r"预算[^\d]{0,8}(\d{3,6})", text)
-    if budget:
-        candidates["budget_cny"] = int(budget.group(1))
+    budget = _extract_budget_cny(text)
+    if budget is not None:
+        candidates["budget_cny"] = budget
     if any(word in text for word in ("养猫", "有猫", "猫毛", "养狗", "有狗", "宠物")):
         candidates["has_pets"] = True
     floor_types = [
@@ -108,10 +133,10 @@ async def save_memory_episode(
                 "thread_id": thread_id,
                 "summary": _redact_sensitive(summary),
                 "source": "conversation_summary",
-            "source_message_count": len(messages),
-            "source_message_ids": [
-                str(message.id) for message in messages if getattr(message, "id", None)
-            ],
+                "source_message_count": len(messages),
+                "source_message_ids": [
+                    str(message.id) for message in messages if getattr(message, "id", None)
+                ],
                 "confidence": 0.8,
                 "sensitivity": "normal",
                 "created_at": _now(),

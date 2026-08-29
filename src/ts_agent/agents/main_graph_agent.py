@@ -4,6 +4,7 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 from typing import Annotated, Any, TypedDict
+from uuid import uuid4
 
 from langchain_core.messages import (
     AIMessage,
@@ -56,22 +57,42 @@ class MainGraphAgent:
         router_model: Any | None = None,
     ) -> MainGraphAgent:
         backends = persistence or await build_persistent_backends()
-        instance = cls(backends, router_model=router_model)
-        instance.purchase_agent = (
-            await PurchaseAgent.create(backends.checkpointer, instance.router_model)
-        ).agent
-        instance.after_sales_agent = (
-            await AfterSalesAgent.create(backends.checkpointer, instance.router_model)
-        ).agent
-        instance.graph = instance._build_graph()
+        instance: MainGraphAgent | None = None
+        try:
+            instance = cls(backends, router_model=router_model)
+            instance.purchase_agent = (
+                await PurchaseAgent.create(backends.checkpointer, instance.router_model)
+            ).agent
+            instance.after_sales_agent = (
+                await AfterSalesAgent.create(backends.checkpointer, instance.router_model)
+            ).agent
+            instance.graph = instance._build_graph()
+        except Exception:
+            # 构建失败时释放自建资源，避免 SQLite 连接与模型客户端泄漏；
+            # 调用方传入的资源仍由调用方持有并自行管理。
+            if persistence is None:
+                if instance is not None and router_model is None:
+                    try:
+                        await cls._close_model_client(instance.router_model)
+                    except Exception:
+                        logger.debug("[main agent]释放路由模型客户端失败", exc_info=True)
+                try:
+                    await backends.close()
+                except Exception:
+                    logger.debug("[main agent]关闭持久化后端失败", exc_info=True)
+            raise
         return instance
+
+    @staticmethod
+    async def _close_model_client(model: Any) -> None:
+        client = getattr(model, "root_async_client", None)
+        close = getattr(client, "close", None)
+        if callable(close):
+            await close()
 
     async def close(self) -> None:
         try:
-            client = getattr(self.router_model, "root_async_client", None)
-            close = getattr(client, "close", None)
-            if callable(close):
-                await close()
+            await self._close_model_client(self.router_model)
         finally:
             await self._persistence.close()
 
@@ -161,7 +182,9 @@ class MainGraphAgent:
         return None
 
     @staticmethod
-    def _build_review_state(action_requests: list[Any]) -> dict[str, Any]:
+    def _build_review_state(
+        action_requests: list[Any], sub_thread_id: str = ""
+    ) -> dict[str, Any]:
         """将待审批工具调用保存为显式、可恢复的业务状态。"""
 
         actions = []
@@ -177,6 +200,7 @@ class MainGraphAgent:
             "count": len(actions) or 1,
             "tools": [action["name"] for action in actions],
             "actions": actions,
+            "sub_thread_id": sub_thread_id,
             "updated_at": datetime.now().isoformat(timespec="seconds"),
         }
 
@@ -297,15 +321,25 @@ class MainGraphAgent:
         route = state.get("route", "unclear")
         return route if route in {"purchase", "after_sales", "unclear"} else "unclear"
 
+    async def _cleanup_child_thread(self, sub_thread_id: str) -> None:
+        """删除已完成轮次的子线程 checkpoint，避免子线程数据随会话无限累积。"""
+        try:
+            await self.checkpointer.adelete_thread(sub_thread_id)
+        except Exception as e:
+            logger.debug(f"[graph node]清理子线程checkpoint失败(可忽略)：{sub_thread_id} {e}")
+
     async def _purchase_node(self, state: MainGraphState, config: RunnableConfig):
         self._node_log("purchase", "调用PurchaseAgent处理选购咨询", state)
         configurable = config.get("configurable", {})
         main_thread_id = configurable.get("thread_id", "default")
         user_id = configurable.get("user_id", "default_user")
-        sub_thread_id = f"{main_thread_id}:purchase"
-        pending = await self._get_pending_review("purchase", sub_thread_id)
+        # 审批记录使用稳定键；子线程每轮全新，避免子 agent 历史跨轮重复累积
+        review_key = f"{main_thread_id}:purchase"
+        pending = await self._get_pending_review("purchase", review_key)
         resuming_pending = False
         if pending:
+            # 审批恢复必须回到中断时的子线程；旧记录无此字段时回退到稳定键
+            sub_thread_id = str(pending.get("sub_thread_id") or "") or review_key
             latest_user_text = ""
             for msg in reversed(state.get("recent_messages", [])):
                 if isinstance(msg, HumanMessage):
@@ -332,10 +366,11 @@ class MainGraphAgent:
                 resume={"decisions": [decision for _ in range(review_count)]}
             )
             pending = await self._update_pending_review(
-                "purchase", sub_thread_id, pending, "executing"
+                "purchase", review_key, pending, "executing"
             )
             resuming_pending = True
         else:
+            sub_thread_id = f"{review_key}:{uuid4().hex[:8]}"
             payload = {"messages": self._build_messages(state)}
 
         child_config = dict(config)
@@ -354,7 +389,7 @@ class MainGraphAgent:
         except Exception:
             if resuming_pending and pending:
                 await self._update_pending_review(
-                    "purchase", sub_thread_id, pending, "failed"
+                    "purchase", review_key, pending, "failed"
                 )
             raise
 
@@ -364,11 +399,11 @@ class MainGraphAgent:
             payload = getattr(first_interrupt, "value", None)
             if isinstance(payload, dict):
                 action_requests = payload.get("action_requests", [])
-                review_state = self._build_review_state(action_requests)
+                review_state = self._build_review_state(action_requests, sub_thread_id)
                 tool_names = review_state["tools"]
                 await self._save_pending_review(
                     "purchase",
-                    sub_thread_id,
+                    review_key,
                     review_state,
                 )
                 logger.info(
@@ -392,7 +427,8 @@ class MainGraphAgent:
         # logger.info(f"[graph node]节点purchase执行完成，回复长度：{len(str(reply))}")
         ai_msg = AIMessage(content=reply)
         if resuming_pending and pending:
-            await self._complete_pending_review("purchase", sub_thread_id, pending)
+            await self._complete_pending_review("purchase", review_key, pending)
+        await self._cleanup_child_thread(sub_thread_id)
         return {
             "recent_messages": [ai_msg],
             "response": reply,
@@ -403,10 +439,13 @@ class MainGraphAgent:
         configurable = config.get("configurable", {})
         main_thread_id = configurable.get("thread_id", "default")
         user_id = configurable.get("user_id", "default_user")
-        sub_thread_id = f"{main_thread_id}:after-sales"
-        pending = await self._get_pending_review("after_sales", sub_thread_id)
+        # 审批记录使用稳定键；子线程每轮全新，避免子 agent 历史跨轮重复累积
+        review_key = f"{main_thread_id}:after-sales"
+        pending = await self._get_pending_review("after_sales", review_key)
         resuming_pending = False
         if pending:
+            # 审批恢复必须回到中断时的子线程；旧记录无此字段时回退到稳定键
+            sub_thread_id = str(pending.get("sub_thread_id") or "") or review_key
             latest_user_text = ""
             for msg in reversed(state.get("recent_messages", [])):
                 if isinstance(msg, HumanMessage):
@@ -433,10 +472,11 @@ class MainGraphAgent:
                 resume={"decisions": [decision for _ in range(review_count)]}
             )
             pending = await self._update_pending_review(
-                "after_sales", sub_thread_id, pending, "executing"
+                "after_sales", review_key, pending, "executing"
             )
             resuming_pending = True
         else:
+            sub_thread_id = f"{review_key}:{uuid4().hex[:8]}"
             payload = {"messages": self._build_messages(state)}
 
         child_config = dict(config)
@@ -455,7 +495,7 @@ class MainGraphAgent:
         except Exception:
             if resuming_pending and pending:
                 await self._update_pending_review(
-                    "after_sales", sub_thread_id, pending, "failed"
+                    "after_sales", review_key, pending, "failed"
                 )
             raise
 
@@ -465,11 +505,11 @@ class MainGraphAgent:
             payload = getattr(first_interrupt, "value", None)
             if isinstance(payload, dict):
                 action_requests = payload.get("action_requests", [])
-                review_state = self._build_review_state(action_requests)
+                review_state = self._build_review_state(action_requests, sub_thread_id)
                 tool_names = review_state["tools"]
                 await self._save_pending_review(
                     "after_sales",
-                    sub_thread_id,
+                    review_key,
                     review_state,
                 )
                 logger.info(
@@ -493,7 +533,8 @@ class MainGraphAgent:
         # logger.info(f"[graph node]节点after_sales执行完成，回复长度：{len(str(reply))}")
         ai_msg = AIMessage(content=reply)
         if resuming_pending and pending:
-            await self._complete_pending_review("after_sales", sub_thread_id, pending)
+            await self._complete_pending_review("after_sales", review_key, pending)
+        await self._cleanup_child_thread(sub_thread_id)
         return {
             "recent_messages": [ai_msg],
             "response": reply,
@@ -508,10 +549,12 @@ class MainGraphAgent:
         messages = state.get("recent_messages", [])
         summary = state.get("summary", "")
 
-        if len(messages) < self.MAX_RECENT_MESSAGES:
+        # 只有超过窗口长度才压缩，恰好等于阈值时 old_messages 为空，
+        # 继续执行会用空增量调用模型并覆盖已有摘要
+        if len(messages) <= self.MAX_RECENT_MESSAGES:
             logger.info(
                 f"[graph node]节点summarize跳过，当前消息数{len(messages)}"
-                f"未达到阈值{self.MAX_RECENT_MESSAGES}"
+                f"未超过阈值{self.MAX_RECENT_MESSAGES}"
             )
             return {}
 

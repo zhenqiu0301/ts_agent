@@ -73,6 +73,25 @@ class StructuredMemoryTests(unittest.IsolatedAsyncioTestCase):
                 await backends.close()
 
 
+class BudgetExtractionTests(unittest.TestCase):
+    def test_budget_amounts_are_converted_by_unit(self) -> None:
+        cases = {
+            "我预算100万想买个扫地机器人": 1_000_000,
+            "预算1.5万以内": 15_000,
+            "预算3000元": 3_000,
+            "预算2k左右": 2_000,
+            "预算800": 800,
+            "预算1500000": 1_500_000,
+        }
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                facts = memory_utils._extract_profile_candidates(
+                    [HumanMessage(content=text)], "thread-budget"
+                )
+                budget = next(fact for fact in facts if fact["key"] == "budget_cny")
+                self.assertEqual(budget["value"], expected)
+
+
 class PendingGateTests(unittest.IsolatedAsyncioTestCase):
     async def test_pending_purchase_bypasses_normal_router(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

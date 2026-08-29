@@ -7,20 +7,32 @@ import threading
 import uuid
 from contextvars import ContextVar, Token
 from datetime import datetime
+from functools import lru_cache
 from typing import Any
 
+import httpx
+import openai
 import requests
 from langchain_core.tools import tool
 from langchain_tavily import TavilySearch
 
 from ts_agent.rag.rag_service import RagSummarizeService
+from ts_agent.rag.vector_store import VectorStoreService
 from ts_agent.utils.config_handler import agent_conf
 from ts_agent.utils.logger_handler import logger
 from ts_agent.utils.path_tool import get_abs_path
 
 
+@lru_cache(maxsize=1)
+def _get_shared_vector_store() -> VectorStoreService:
+    """进程内共享向量库：Chroma 与 DashScope embeddings 均为同步实现，跨事件循环安全。"""
+    return VectorStoreService()
+
+
 def get_rag_service() -> RagSummarizeService:
-    return RagSummarizeService()
+    # ChatOpenAI 的异步 httpx client 绑定创建时的事件循环，须按调用新建并在用后关闭，
+    # 不能整体缓存服务实例。
+    return RagSummarizeService(vector_store=_get_shared_vector_store())
 
 
 def get_tavily_search() -> TavilySearch:
@@ -132,15 +144,15 @@ async def rag_summarize(query: str) -> str:
         str: 检索总结文本；若失败则返回可直接展示给用户的错误提示。
 
     """
+    service = get_rag_service()
     try:
-        return await get_rag_service().rag_summarize(query)
-        # return rag_state_graph_agent.invoke(query)
-    except requests.exceptions.SSLError as e:
-        logger.error(
-            f"[rag_summarize]调用模型服务时发生SSL异常: {str(e)}", exc_info=True
-        )
-        return "当前与模型服务的安全连接失败（SSL）。请检查网络代理/VPN、系统证书或稍后重试。"
-    except requests.exceptions.RequestException as e:
+        return await service.rag_summarize(query)
+    except (
+        httpx.HTTPError,
+        openai.APIError,
+        requests.exceptions.RequestException,
+    ) as e:
+        # ChatOpenAI 走 openai/httpx 异常族，DashScope embeddings 走 requests 异常族
         logger.error(
             f"[rag_summarize]调用模型服务时发生网络异常: {str(e)}", exc_info=True
         )
@@ -148,6 +160,8 @@ async def rag_summarize(query: str) -> str:
     except Exception as e:
         logger.error(f"[rag_summarize]执行失败: {str(e)}", exc_info=True)
         return "检索总结暂时不可用，请稍后重试。"
+    finally:
+        await service.close()
 
 
 @tool(parse_docstring=True)

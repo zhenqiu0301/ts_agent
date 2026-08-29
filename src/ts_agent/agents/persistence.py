@@ -53,11 +53,24 @@ async def build_persistent_backends(
         store_db_name = f"{stem}_store.sqlite"
 
     checkpoint_connection = await _connect(base_path / checkpoint_db_name)
-    store_connection = await _connect(base_path / store_db_name)
+    try:
+        store_connection = await _connect(base_path / store_db_name)
+    except BaseException:
+        await checkpoint_connection.close()
+        raise
     checkpointer = AsyncSqliteSaver(checkpoint_connection)
     store = AsyncSqliteStore(store_connection)
-    await checkpointer.setup()
-    await store.setup()
+    try:
+        await checkpointer.setup()
+        await store.setup()
+    except BaseException:
+        # 半初始化失败时关闭已建立的连接，避免泄漏
+        for connection in (checkpoint_connection, store_connection):
+            try:
+                await connection.close()
+            except Exception:
+                pass
+        raise
 
     return PersistentBackends(
         checkpointer=checkpointer,

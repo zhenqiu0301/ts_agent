@@ -6,7 +6,6 @@ from ts_agent.model.factory import get_chat_model
 from ts_agent.tools.mcp_tools import get_price_comparison_tool
 from ts_agent.tools.middleware import (
     after_sales_human_review,
-    get_context_summarize,
     log_before_model,
     monitor_tool,
     report_prompt_switch,
@@ -46,6 +45,7 @@ class PurchaseAgent:
     async def create(cls, checkpointer, model=None):
         tools = [*purchase_tools, get_price_comparison_tool()]
         # 保留 report_prompt_switch：当上下文标记 report=True 时仍可自动切换到报告提示词
+        # 会话压缩统一由主图 summarize 节点负责，子 agent 不再内置摘要中间件
         agent = create_agent(
             model=model or get_chat_model(),
             system_prompt=load_purchase_prompts(),
@@ -55,7 +55,6 @@ class PurchaseAgent:
                 monitor_tool,
                 log_before_model,
                 report_prompt_switch,
-                get_context_summarize(),
             ],
             checkpointer=checkpointer,
         )
@@ -78,7 +77,6 @@ class AfterSalesAgent:
                 monitor_tool,
                 log_before_model,
                 report_prompt_switch,
-                get_context_summarize(),
             ],
             checkpointer=checkpointer,
         )

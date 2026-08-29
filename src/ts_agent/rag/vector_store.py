@@ -150,7 +150,11 @@ class VectorStoreService:
             documents = self._load_file(path)
             chunks = self.splitter.split_documents(documents) if documents else []
             if not chunks:
-                logger.warning("[加载知识库]文件无有效分片，跳过: %s", path)
+                # 文件已变化但解析不出分片：清掉旧向量并落新 md5，
+                # 避免脏内容一直可检索、且每次同步重复告警
+                self._delete_ids(list(previous.get("ids", [])))
+                files_manifest[source] = {"md5": md5_hex, "ids": []}
+                logger.warning("[加载知识库]文件无有效分片，已清理旧分片: %s", path)
                 continue
 
             self._delete_ids(list(previous.get("ids", [])))

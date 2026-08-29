@@ -4,7 +4,7 @@ import streamlit as st
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 
 from ts_agent.agents.main_graph_agent import MainGraphAgent
-from ts_agent.utils.logger_handler import enable_file_logging
+from ts_agent.utils.logger_handler import enable_file_logging, logger
 
 AGENT_RUNTIME_VERSION = "native-async-v1"
 enable_file_logging()
@@ -55,9 +55,13 @@ with st.sidebar:
                     st.session_state["memory_snapshot"] = await agent.list_user_memories(
                         st.session_state["user_id"]
                     )
+                    yield "记忆已加载。"
+                except Exception as e:
+                    # 捕获异常让生成器正常收尾，确保 finally 在存活的事件循环上关闭 agent
+                    logger.error(f"[memory]加载记忆失败: {e}", exc_info=True)
+                    yield "记忆加载失败，请稍后重试。"
                 finally:
                     await agent.close()
-                yield "记忆已加载。"
 
             st.write_stream(load_memories())
 
@@ -73,11 +77,14 @@ with st.sidebar:
                 agent = await MainGraphAgent.create()
                 try:
                     await agent.clear_user_memories(st.session_state["user_id"])
+                    st.session_state["memory_snapshot"] = None
+                    st.session_state["bootstrap_summary_loaded"] = False
+                    yield "长期记忆已清除。"
+                except Exception as e:
+                    logger.error(f"[memory]清除记忆失败: {e}", exc_info=True)
+                    yield "记忆清除失败，请稍后重试。"
                 finally:
                     await agent.close()
-                st.session_state["memory_snapshot"] = None
-                st.session_state["bootstrap_summary_loaded"] = False
-                yield "长期记忆已清除。"
 
             st.write_stream(clear_memories())
 
@@ -114,6 +121,10 @@ with st.sidebar:
                         else "没有可整理的长期记忆增量。"
                     ),
                 }
+            except Exception as e:
+                logger.error(f"[memory]整理长期记忆失败: {e}", exc_info=True)
+                yield "长期记忆整理失败，请稍后重试。"
+                return
             finally:
                 await agent.close()
             st.session_state["thread_id"] = (
@@ -176,6 +187,12 @@ if prompt:
                 ):
                     cache_list.append(chunk)
                     yield chunk
+            except Exception as e:
+                # 捕获后生成器正常收尾，确保 finally 在存活的事件循环上关闭 agent
+                logger.error(f"[chat]处理消息失败: {e}", exc_info=True)
+                message = "抱歉，刚才处理时出现异常，请稍后重试。"
+                cache_list.append(message)
+                yield message
             finally:
                 await agent.close()
 

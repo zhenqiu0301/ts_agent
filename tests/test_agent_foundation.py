@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from langchain_core.embeddings import DeterministicFakeEmbedding
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage, RemoveMessage
 
 from ts_agent.agents.main_graph_agent import MainGraphAgent
 from ts_agent.agents.persistence import build_persistent_backends
@@ -104,6 +106,150 @@ class AsyncExecutionTests(unittest.IsolatedAsyncioTestCase):
                 await agent.close()
 
 
+class CountingSummaryModel:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def ainvoke(self, _messages, config=None):
+        self.calls += 1
+        return AIMessage(content="合并后的摘要")
+
+
+class SummarizeBoundaryTests(unittest.IsolatedAsyncioTestCase):
+    @staticmethod
+    def _messages(count: int) -> list:
+        return [
+            HumanMessage(content=f"问题{i}") if i % 2 == 0 else AIMessage(content=f"回答{i}")
+            for i in range(count)
+        ]
+
+    async def test_summarize_skips_at_exact_threshold(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            backends = await build_persistent_backends(Path(directory))
+            agent = MainGraphAgent(backends, router_model=CountingSummaryModel())
+            try:
+                updates = await agent._summarize_node(
+                    {
+                        "recent_messages": self._messages(agent.MAX_RECENT_MESSAGES),
+                        "summary": "旧摘要",
+                    },
+                    {},
+                )
+                self.assertEqual(updates, {})
+                self.assertEqual(agent.router_model.calls, 0)
+            finally:
+                await agent.close()
+
+    async def test_summarize_merges_only_overflow_messages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            backends = await build_persistent_backends(Path(directory))
+            agent = MainGraphAgent(backends, router_model=CountingSummaryModel())
+            try:
+                updates = await agent._summarize_node(
+                    {
+                        "recent_messages": self._messages(agent.MAX_RECENT_MESSAGES + 2),
+                        "summary": "旧摘要",
+                    },
+                    {},
+                )
+                self.assertEqual(agent.router_model.calls, 1)
+                self.assertEqual(updates["summary"], "合并后的摘要")
+                trimmed = updates["recent_messages"]
+                self.assertIsInstance(trimmed[0], RemoveMessage)
+                self.assertEqual(len(trimmed) - 1, agent.MAX_RECENT_MESSAGES)
+            finally:
+                await agent.close()
+
+
+class RecordingChildAgent:
+    """记录每次调用的子线程 id，可选在首次调用返回 interrupt。"""
+
+    def __init__(self, *, interrupt_first: bool = False) -> None:
+        self.interrupt_first = interrupt_first
+        self.thread_ids: list[str] = []
+
+    async def ainvoke(self, _payload, *, context, config):
+        self.thread_ids.append(str(config["configurable"]["thread_id"]))
+        if self.interrupt_first and len(self.thread_ids) == 1:
+            return {
+                "__interrupt__": [
+                    SimpleNamespace(
+                        value={
+                            "action_requests": [
+                                {
+                                    "name": "create_purchase_order",
+                                    "args": {"product_model": "X1"},
+                                }
+                            ]
+                        }
+                    )
+                ]
+            }
+        return {"messages": [AIMessage(content="好的")]}
+
+
+class SubThreadIsolationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_each_turn_uses_fresh_child_thread(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            backends = await build_persistent_backends(Path(directory))
+            agent = MainGraphAgent(backends, router_model=AsyncRouterModel())
+            child = RecordingChildAgent()
+            agent.purchase_agent = child
+            config = {"configurable": {"thread_id": "iso-main", "user_id": "user"}}
+            try:
+                for _ in range(2):
+                    result = await agent._purchase_node(
+                        {
+                            "recent_messages": [HumanMessage(content="帮我选")],
+                            "summary": "",
+                        },
+                        config,
+                    )
+                    self.assertEqual(result["response"], "好的")
+                self.assertEqual(len(child.thread_ids), 2)
+                self.assertNotEqual(child.thread_ids[0], child.thread_ids[1])
+                for thread_id in child.thread_ids:
+                    self.assertTrue(thread_id.startswith("iso-main:purchase:"))
+            finally:
+                await agent.close()
+
+    async def test_pending_review_records_and_resumes_child_thread(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            backends = await build_persistent_backends(Path(directory))
+            agent = MainGraphAgent(backends, router_model=AsyncRouterModel())
+            child = RecordingChildAgent(interrupt_first=True)
+            agent.purchase_agent = child
+            config = {"configurable": {"thread_id": "hitl-main", "user_id": "user"}}
+            try:
+                first = await agent._purchase_node(
+                    {
+                        "recent_messages": [HumanMessage(content="帮我下单")],
+                        "summary": "",
+                    },
+                    config,
+                )
+                self.assertIn("人工确认", first["response"])
+                pending = await agent._get_pending_review("purchase", "hitl-main:purchase")
+                self.assertIsNotNone(pending)
+                self.assertEqual(pending["sub_thread_id"], child.thread_ids[0])
+
+                second = await agent._purchase_node(
+                    {
+                        "recent_messages": [HumanMessage(content="确认执行")],
+                        "summary": "",
+                    },
+                    config,
+                )
+                self.assertEqual(second["response"], "好的")
+                # 恢复轮必须复用中断时的子线程
+                self.assertEqual(child.thread_ids[1], child.thread_ids[0])
+                self.assertIsNone(
+                    await agent._get_pending_review("purchase", "hitl-main:purchase")
+                )
+            finally:
+                await agent.close()
+
+
 class RoutingTests(unittest.TestCase):
     def test_sensitive_action_decisions(self) -> None:
         self.assertEqual(
@@ -178,6 +324,37 @@ class VectorIndexTests(unittest.TestCase):
                 {metadata["source"] for metadata in result["metadatas"]},
                 {"second.txt"},
             )
+
+    def test_index_sync_clears_stale_chunks_when_file_becomes_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "raw"
+            data_dir.mkdir()
+            doc = data_dir / "doc.txt"
+            doc.write_text("第一版知识内容。", encoding="utf-8")
+
+            service = VectorStoreService(
+                embeddings=DeterministicFakeEmbedding(size=8),
+                persist_directory=root / "chroma",
+                manifest_path=root / "manifest.json",
+                data_path=data_dir,
+                collection_name="test-agent-empty",
+            )
+            service.load_documents()
+            self.assertTrue(set(service.vector_store.get(include=[])["ids"]))
+
+            doc.write_text("", encoding="utf-8")
+            service.load_documents()
+            self.assertEqual(service.vector_store.get(include=[])["ids"], [])
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["files"]["doc.txt"]["ids"], [])
+
+            # md5 已更新，二次同步不再重复处理
+            service.load_documents()
+            manifest_again = json.loads(
+                (root / "manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(manifest["files"], manifest_again["files"])
 
 
 if __name__ == "__main__":
