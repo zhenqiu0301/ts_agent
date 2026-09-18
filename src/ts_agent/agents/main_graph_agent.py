@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
-from datetime import datetime
 from typing import Annotated, Any, TypedDict
 from uuid import uuid4
 
@@ -16,7 +15,6 @@ from langchain_core.messages import (
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import REMOVE_ALL_MESSAGES, add_messages
-from langgraph.types import Command
 
 from ts_agent.agents import memory_utils
 from ts_agent.agents.persistence import PersistentBackends, build_persistent_backends
@@ -30,6 +28,7 @@ class MainGraphState(TypedDict):
     summary: str
     route: str
     response: str
+    memory_context: str
 
 
 class MainGraphAgent:
@@ -96,133 +95,15 @@ class MainGraphAgent:
         finally:
             await self._persistence.close()
 
-    def _pending_review_namespace(self, route: str) -> tuple[str, ...]:
-        return ("hitl_reviews", route)
-
-    async def _get_pending_review(
-        self, route: str, thread_id: str
-    ) -> dict[str, Any] | None:
-        item = await self.store.aget(self._pending_review_namespace(route), thread_id)
-        return dict(item.value) if item and isinstance(item.value, dict) else None
-
-    async def _save_pending_review(
-        self, route: str, thread_id: str, value: dict[str, Any]
-    ) -> None:
-        await self.store.aput(self._pending_review_namespace(route), thread_id, value)
-
-    async def _delete_pending_review(self, route: str, thread_id: str) -> None:
-        await self.store.adelete(self._pending_review_namespace(route), thread_id)
-
-    async def _update_pending_review(
-        self, route: str, thread_id: str, pending: dict[str, Any], status: str
-    ) -> dict[str, Any]:
-        updated = {
-            **pending,
-            "status": status,
-            "updated_at": datetime.now().isoformat(timespec="seconds"),
-        }
-        await self._save_pending_review(route, thread_id, updated)
-        return updated
-
-    async def _complete_pending_review(
-        self, route: str, thread_id: str, pending: dict[str, Any]
-    ) -> None:
-        completed = {
-            **pending,
-            "status": "completed",
-            "updated_at": datetime.now().isoformat(timespec="seconds"),
-        }
-        await self.store.aput(("hitl_history", route), thread_id, completed)
-        await self._delete_pending_review(route, thread_id)
-
-    async def _find_pending_route(self, main_thread_id: str) -> str | None:
-        for route, suffix in (("purchase", "purchase"), ("after_sales", "after-sales")):
-            pending = await self._get_pending_review(route, f"{main_thread_id}:{suffix}")
-            if pending and pending.get("status") in {
-                "awaiting_review",
-                "executing",
-                "failed",
-            }:
-                return route
-        return None
-
-    @staticmethod
-    def _parse_ticket_review_decision(text: str) -> dict[str, Any] | None:
-        normalized = re.sub(r"\s+", "", (text or "").lower())
-        approve_patterns = (
-            "确认创建工单",
-            "同意创建工单",
-            "可以创建工单",
-            "确认建单",
-            "同意建单",
-            "确认退货申请",
-            "同意退货申请",
-            "可以退货申请",
-            "确认执行",
-            "同意执行",
-        )
-        reject_patterns = (
-            "暂不创建工单",
-            "不要创建工单",
-            "先不创建工单",
-            "暂不建单",
-            "不要建单",
-            "先不建单",
-            "暂不退货申请",
-            "不要退货申请",
-            "先不退货申请",
-            "暂不执行",
-            "不要执行",
-            "先不执行",
-        )
-        if any(p in normalized for p in approve_patterns):
-            return {"type": "approve"}
-        if any(p in normalized for p in reject_patterns):
-            return {"type": "reject", "message": "用户暂不执行敏感售后操作，继续在线处理。"}
-        return None
-
-    @staticmethod
-    def _build_review_state(
-        action_requests: list[Any], sub_thread_id: str = ""
-    ) -> dict[str, Any]:
-        """将待审批工具调用保存为显式、可恢复的业务状态。"""
-
-        actions = []
-        for action in action_requests:
-            if not isinstance(action, dict):
-                continue
-            name = str(action.get("name", "")).strip()
-            args = action.get("args", {})
-            if name:
-                actions.append({"name": name, "args": args if isinstance(args, dict) else {}})
-        return {
-            "status": "awaiting_review",
-            "count": len(actions) or 1,
-            "tools": [action["name"] for action in actions],
-            "actions": actions,
-            "sub_thread_id": sub_thread_id,
-            "updated_at": datetime.now().isoformat(timespec="seconds"),
-        }
-
     def _build_graph(self):
         builder = StateGraph(MainGraphState)
 
-        builder.add_node("pending_gate", self._pending_gate_node)
         builder.add_node("analyze", self._analyze_node)
         builder.add_node("purchase", self._purchase_node)
         builder.add_node("after_sales", self._after_sales_node)
         builder.add_node("summarize", self._summarize_node)
 
-        builder.add_edge(START, "pending_gate")
-        builder.add_conditional_edges(
-            "pending_gate",
-            self._pending_gate_selector,
-            {
-                "analyze": "analyze",
-                "purchase": "purchase",
-                "after_sales": "after_sales",
-            },
-        )
+        builder.add_edge(START, "analyze")
         builder.add_conditional_edges(
             "analyze",
             self._route_selector,
@@ -237,21 +118,6 @@ class MainGraphAgent:
         builder.add_edge("summarize", END)
 
         return builder.compile(checkpointer=self.checkpointer, store=self.store)
-
-    async def _pending_gate_node(
-        self, state: MainGraphState, config: RunnableConfig
-    ) -> dict[str, str]:
-        self._node_log("pending_gate", "检查待审批业务动作", state)
-        main_thread_id = str(
-            config.get("configurable", {}).get("thread_id", "default")
-        )
-        route = await self._find_pending_route(main_thread_id)
-        return {"route": route or "analyze"}
-
-    @staticmethod
-    def _pending_gate_selector(state: MainGraphState) -> str:
-        route = state.get("route", "analyze")
-        return route if route in {"purchase", "after_sales"} else "analyze"
 
     @staticmethod
     def _node_log(node: str, action: str, state: MainGraphState | None = None) -> None:
@@ -284,8 +150,11 @@ class MainGraphAgent:
 
     def _build_messages(self, state: MainGraphState) -> list[BaseMessage]:
         summary = state.get("summary", "").strip()
+        memory_context = state.get("memory_context", "").strip()
         messages = list(state.get("recent_messages", []))
         prefixes: list[BaseMessage] = []
+        if memory_context:
+            prefixes.append(SystemMessage(content=f"已知用户背景：{memory_context}"))
         if summary:
             prefixes.append(SystemMessage(content=f"历史摘要：{summary}"))
         return [*prefixes, *messages]
@@ -333,46 +202,8 @@ class MainGraphAgent:
         configurable = config.get("configurable", {})
         main_thread_id = configurable.get("thread_id", "default")
         user_id = configurable.get("user_id", "default_user")
-        # 审批记录使用稳定键；子线程每轮全新，避免子 agent 历史跨轮重复累积
-        review_key = f"{main_thread_id}:purchase"
-        pending = await self._get_pending_review("purchase", review_key)
-        resuming_pending = False
-        if pending:
-            # 审批恢复必须回到中断时的子线程；旧记录无此字段时回退到稳定键
-            sub_thread_id = str(pending.get("sub_thread_id") or "") or review_key
-            latest_user_text = ""
-            for msg in reversed(state.get("recent_messages", [])):
-                if isinstance(msg, HumanMessage):
-                    latest_user_text = str(getattr(msg, "content", "") or "")
-                    break
-            decision = self._parse_ticket_review_decision(latest_user_text)
-            if decision is None:
-                logger.info(
-                    "[hitl] 审批回复无效，thread_id=%s，input_length=%s",
-                    sub_thread_id,
-                    len(latest_user_text.strip()),
-                )
-                return {
-                    "response": "当前有待确认的购买操作。请回复“确认执行”或“暂不执行”。"
-                }
-            logger.info(
-                "[hitl] 收到审批决定，thread_id=%s，decision=%s，tools=%s",
-                sub_thread_id,
-                decision.get("type"),
-                pending.get("tools", []),
-            )
-            review_count = int(pending.get("count", 1) or 1)
-            payload: Command | dict = Command(
-                resume={"decisions": [decision for _ in range(review_count)]}
-            )
-            pending = await self._update_pending_review(
-                "purchase", review_key, pending, "executing"
-            )
-            resuming_pending = True
-        else:
-            sub_thread_id = f"{review_key}:{uuid4().hex[:8]}"
-            payload = {"messages": self._build_messages(state)}
-
+        # 子线程每轮全新，避免子 agent 历史跨轮重复累积
+        sub_thread_id = f"{main_thread_id}:purchase:{uuid4().hex[:8]}"
         child_config = dict(config)
         child_config["tags"] = [*config.get("tags", []), "user-response"]
         child_config["configurable"] = {
@@ -380,41 +211,11 @@ class MainGraphAgent:
             "thread_id": sub_thread_id,
             "user_id": user_id,
         }
-        try:
-            result = await self.purchase_agent.ainvoke(
-                payload,
-                context={"route": "purchase", "report": False},
-                config=child_config,
-            )
-        except Exception:
-            if resuming_pending and pending:
-                await self._update_pending_review(
-                    "purchase", review_key, pending, "failed"
-                )
-            raise
-
-        interrupts = result.get("__interrupt__")
-        if interrupts:
-            first_interrupt = interrupts[0]
-            payload = getattr(first_interrupt, "value", None)
-            if isinstance(payload, dict):
-                action_requests = payload.get("action_requests", [])
-                review_state = self._build_review_state(action_requests, sub_thread_id)
-                tool_names = review_state["tools"]
-                await self._save_pending_review(
-                    "purchase",
-                    review_key,
-                    review_state,
-                )
-                logger.info(
-                    "[hitl] 触发人工审批，thread_id=%s，count=%s，tools=%s",
-                    sub_thread_id,
-                    len(action_requests) or 1,
-                    tool_names,
-                )
-            return {
-                "response": "检测到敏感购买操作需要人工确认。请回复“确认执行”或“暂不执行”。"
-            }
+        result = await self.purchase_agent.ainvoke(
+            {"messages": self._build_messages(state)},
+            context={"route": "purchase", "report": False},
+            config=child_config,
+        )
 
         reply = next(
             (
@@ -424,13 +225,9 @@ class MainGraphAgent:
             ),
             "",
         )
-        # logger.info(f"[graph node]节点purchase执行完成，回复长度：{len(str(reply))}")
-        ai_msg = AIMessage(content=reply)
-        if resuming_pending and pending:
-            await self._complete_pending_review("purchase", review_key, pending)
         await self._cleanup_child_thread(sub_thread_id)
         return {
-            "recent_messages": [ai_msg],
+            "recent_messages": [AIMessage(content=reply)],
             "response": reply,
         }
 
@@ -439,46 +236,8 @@ class MainGraphAgent:
         configurable = config.get("configurable", {})
         main_thread_id = configurable.get("thread_id", "default")
         user_id = configurable.get("user_id", "default_user")
-        # 审批记录使用稳定键；子线程每轮全新，避免子 agent 历史跨轮重复累积
-        review_key = f"{main_thread_id}:after-sales"
-        pending = await self._get_pending_review("after_sales", review_key)
-        resuming_pending = False
-        if pending:
-            # 审批恢复必须回到中断时的子线程；旧记录无此字段时回退到稳定键
-            sub_thread_id = str(pending.get("sub_thread_id") or "") or review_key
-            latest_user_text = ""
-            for msg in reversed(state.get("recent_messages", [])):
-                if isinstance(msg, HumanMessage):
-                    latest_user_text = str(getattr(msg, "content", "") or "")
-                    break
-            decision = self._parse_ticket_review_decision(latest_user_text)
-            if decision is None:
-                logger.info(
-                    "[hitl] 审批回复无效，thread_id=%s，input_length=%s",
-                    sub_thread_id,
-                    len(latest_user_text.strip()),
-                )
-                return {
-                    "response": "当前有待确认的售后操作。请回复“确认执行”或“暂不执行”。"
-                }
-            logger.info(
-                "[hitl] 收到审批决定，thread_id=%s，decision=%s，tools=%s",
-                sub_thread_id,
-                decision.get("type"),
-                pending.get("tools", []),
-            )
-            review_count = int(pending.get("count", 1) or 1)
-            payload: Command | dict = Command(
-                resume={"decisions": [decision for _ in range(review_count)]}
-            )
-            pending = await self._update_pending_review(
-                "after_sales", review_key, pending, "executing"
-            )
-            resuming_pending = True
-        else:
-            sub_thread_id = f"{review_key}:{uuid4().hex[:8]}"
-            payload = {"messages": self._build_messages(state)}
-
+        # 子线程每轮全新，避免子 agent 历史跨轮重复累积
+        sub_thread_id = f"{main_thread_id}:after-sales:{uuid4().hex[:8]}"
         child_config = dict(config)
         child_config["tags"] = [*config.get("tags", []), "user-response"]
         child_config["configurable"] = {
@@ -486,41 +245,11 @@ class MainGraphAgent:
             "thread_id": sub_thread_id,
             "user_id": user_id,
         }
-        try:
-            result = await self.after_sales_agent.ainvoke(
-                payload,
-                context={"route": "after_sales", "report": False},
-                config=child_config,
-            )
-        except Exception:
-            if resuming_pending and pending:
-                await self._update_pending_review(
-                    "after_sales", review_key, pending, "failed"
-                )
-            raise
-
-        interrupts = result.get("__interrupt__")
-        if interrupts:
-            first_interrupt = interrupts[0]
-            payload = getattr(first_interrupt, "value", None)
-            if isinstance(payload, dict):
-                action_requests = payload.get("action_requests", [])
-                review_state = self._build_review_state(action_requests, sub_thread_id)
-                tool_names = review_state["tools"]
-                await self._save_pending_review(
-                    "after_sales",
-                    review_key,
-                    review_state,
-                )
-                logger.info(
-                    "[hitl] 触发人工审批，thread_id=%s，count=%s，tools=%s",
-                    sub_thread_id,
-                    len(action_requests) or 1,
-                    tool_names,
-                )
-            return {
-                "response": "检测到敏感售后操作需要人工确认。请回复“确认执行”或“暂不执行”。"
-            }
+        result = await self.after_sales_agent.ainvoke(
+            {"messages": self._build_messages(state)},
+            context={"route": "after_sales", "report": False},
+            config=child_config,
+        )
 
         reply = next(
             (
@@ -530,13 +259,9 @@ class MainGraphAgent:
             ),
             "",
         )
-        # logger.info(f"[graph node]节点after_sales执行完成，回复长度：{len(str(reply))}")
-        ai_msg = AIMessage(content=reply)
-        if resuming_pending and pending:
-            await self._complete_pending_review("after_sales", review_key, pending)
         await self._cleanup_child_thread(sub_thread_id)
         return {
-            "recent_messages": [ai_msg],
+            "recent_messages": [AIMessage(content=reply)],
             "response": reply,
         }
 
@@ -618,15 +343,25 @@ class MainGraphAgent:
         streamed_text = ""
         final_response = ""
         user_msg = HumanMessage(content=query)
+        # 检索到的长期记忆作为本轮背景注入两个业务节点；检索失败不阻塞对话
+        try:
+            memory_context = await self.load_user_memory_summary(
+                user_id, query
+            )
+        except Exception as e:
+            logger.warning(f"[memory]检索用户记忆失败，本轮不注入：{e}")
+            memory_context = ""
         input_payload: dict = {
             "recent_messages": [user_msg],
             "response": "",
+            "memory_context": memory_context,
         }
         if bootstrap_summary is not None:
             input_payload["summary"] = bootstrap_summary
 
         async for mode, data in self.graph.astream(
-            # 重置 response，避免新一轮开始时复用上轮持久化状态里的旧回答。
+            # 重置 response，避免新一轮开始时复用上轮持久化状态里的旧回答；
+            # memory_context 同样逐轮重建，避免复用上一轮的检索结果。
             input_payload,
             stream_mode=["messages", "updates", "values"],
             config={"configurable": {"thread_id": thread_id, "user_id": user_id}},

@@ -25,3 +25,10 @@ data/long_memory/
 .DS_Store
 .idea/
 .vscode/
+report_*
+
+evals/.serve_eval_model.pid
+evals/.serve_eval_model.log
+
+# vendored MCP Node dependencies (install locally via npm install)
+node_modules/

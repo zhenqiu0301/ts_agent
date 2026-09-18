@@ -227,7 +227,7 @@ async def clear_user_memories(store: Any, user_id: str) -> None:
 async def summarize_long_memory_delta(model: Any, messages: list[BaseMessage]) -> str:
     conversation = messages_to_plain_text(messages)
     system_prompt = (
-        "你是客服业务事件摘要器。仅保留用户目标、产品、故障、订单/工单结果和待跟进事项。\n"
+        "你是客服业务事件摘要器。仅保留用户目标、产品、故障、工单结果和待跟进事项。\n"
         "禁止输出手机号、详细地址、身份证号。若无值得保留的业务事件，输出“无”。"
     )
     result = await model.ainvoke(

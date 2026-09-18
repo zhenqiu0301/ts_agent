@@ -11,8 +11,6 @@ from ts_agent.agents.sub_agents import after_sales_tools
 from ts_agent.tools.mcp_tools import get_lazy_price_compare_tools, get_price_comparison_tool
 from ts_agent.tools.tools import (
     create_after_sales_ticket,
-    create_manual_return_request,
-    create_purchase_order,
     external_data,
     fetch_external_data,
     fill_context_for_report,
@@ -67,9 +65,7 @@ class BusinessActionTests(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         root = Path(self.temp_dir.name)
         self.paths = {
-            "TS_PURCHASE_ORDER_PATH": root / "orders.jsonl",
             "TS_AFTER_SALES_TICKET_PATH": root / "tickets.jsonl",
-            "TS_AFTER_SALES_RETURN_PATH": root / "returns.jsonl",
         }
         self.previous = {key: os.environ.get(key) for key in self.paths}
         for key, path in self.paths.items():
@@ -87,40 +83,11 @@ class BusinessActionTests(unittest.TestCase):
                 os.environ[key] = value
         self.temp_dir.cleanup()
 
-    def test_purchase_order_is_validated_and_idempotent(self) -> None:
-        payload = {
-            "product_model": "X1",
-            "quantity": 1,
-            "consignee": "张三",
-            "phone": "138-0000-0000",
-            "address": "上海市测试路1号",
-        }
-        first = create_purchase_order.invoke(payload)
-        second = create_purchase_order.invoke(payload)
-        self.assertIn("订单已创建", first)
-        self.assertIn("未重复下单", second)
-        records = self._records("TS_PURCHASE_ORDER_PATH")
-        self.assertEqual(len(records), 1)
-        self.assertIn("idempotency_key", records[0])
-
-        invalid = create_purchase_order.invoke({**payload, "quantity": 21})
-        self.assertIn("1-20", invalid)
-
-    def test_ticket_and_return_request_are_idempotent(self) -> None:
+    def test_ticket_is_idempotent(self) -> None:
         ticket = {"summary": "无法开机", "symptoms": "按电源键无反应", "phone": "13800000000"}
         self.assertIn("工单已创建", create_after_sales_ticket.invoke(ticket))
         self.assertIn("未重复创建", create_after_sales_ticket.invoke(ticket))
         self.assertEqual(len(self._records("TS_AFTER_SALES_TICKET_PATH")), 1)
-
-        request = {
-            "reason": "不符合预期",
-            "product_model": "X1",
-            "phone": "13800000000",
-            "address": "上海市测试路1号",
-        }
-        self.assertIn("申请已创建", create_manual_return_request.invoke(request))
-        self.assertIn("未重复申请", create_manual_return_request.invoke(request))
-        self.assertEqual(len(self._records("TS_AFTER_SALES_RETURN_PATH")), 1)
 
     def _records(self, env_name: str) -> list[dict]:
         path = Path(os.environ[env_name])

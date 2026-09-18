@@ -7,7 +7,6 @@ from pathlib import Path
 from langchain_core.messages import AIMessage, HumanMessage
 
 from ts_agent.agents import memory_utils
-from ts_agent.agents.main_graph_agent import MainGraphAgent
 from ts_agent.agents.persistence import build_persistent_backends
 
 
@@ -91,37 +90,3 @@ class BudgetExtractionTests(unittest.TestCase):
                 budget = next(fact for fact in facts if fact["key"] == "budget_cny")
                 self.assertEqual(budget["value"], expected)
 
-
-class PendingGateTests(unittest.IsolatedAsyncioTestCase):
-    async def test_pending_purchase_bypasses_normal_router(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            backends = await build_persistent_backends(Path(directory))
-            agent = MainGraphAgent(backends, router_model=SummaryModel())
-            try:
-                pending = agent._build_review_state(
-                    [{"name": "create_purchase_order", "args": {"product_model": "X1"}}]
-                )
-                await agent._save_pending_review(
-                    "purchase", "thread-1:purchase", pending
-                )
-                result = await agent._pending_gate_node(
-                    {"recent_messages": [HumanMessage(content="确认执行")]},
-                    {"configurable": {"thread_id": "thread-1"}},
-                )
-                self.assertEqual(result["route"], "purchase")
-                executing = await agent._update_pending_review(
-                    "purchase", "thread-1:purchase", pending, "executing"
-                )
-                self.assertEqual(executing["status"], "executing")
-                await agent._complete_pending_review(
-                    "purchase", "thread-1:purchase", executing
-                )
-                self.assertIsNone(
-                    await agent._get_pending_review("purchase", "thread-1:purchase")
-                )
-                history = await backends.store.aget(
-                    ("hitl_history", "purchase"), "thread-1:purchase"
-                )
-                self.assertEqual(history.value["status"], "completed")
-            finally:
-                await agent.close()

@@ -3,14 +3,14 @@ from collections.abc import Callable
 
 from langchain.agents import AgentState
 from langchain.agents.middleware import (
-    HumanInTheLoopMiddleware,
     ModelRequest,
     before_model,
     dynamic_prompt,
+    wrap_model_call,
     wrap_tool_call,
 )
 from langchain.tools.tool_node import ToolCallRequest
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage
 from langgraph.runtime import Runtime
 from langgraph.types import Command
 
@@ -45,32 +45,39 @@ def _safe_preview_content(content) -> str:
         return ""
     return str(content).strip()
 
-after_sales_human_review = HumanInTheLoopMiddleware(
-    interrupt_on={
-        "create_purchase_order": {
-            "allowed_decisions": ["approve", "reject"],
-            "description": (
-                "订单创建需要人工确认。\n"
-                "请核对参数（product_model/quantity/consignee/phone/address）是否准确。"
-            ),
-        },
-        "create_after_sales_ticket": {
-            "allowed_decisions": ["approve", "reject"],
-            "description": (
-                "售后工单创建需要人工确认。\n"
-                "请核对工单参数（summary/symptoms/phone）是否准确。"
-            ),
-        },
-        "create_manual_return_request": {
-            "allowed_decisions": ["approve", "reject"],
-            "description": (
-                "人工退货申请创建需要人工确认。\n"
-                "请核对参数（reason/product_model/phone/address）是否准确。"
-            ),
-        },
-    },
-    description_prefix="售后敏感操作需要人工确认",
-)
+TOOL_RESULT_MAX_CHARS = int(os.getenv("TS_TOOL_RESULT_MAX_CHARS", "2000") or "2000")
+MAX_TOOL_ROUNDS = int(os.getenv("TS_MAX_TOOL_ROUNDS", "6") or "6")
+TRUNCATED_SUFFIX = "\n…[工具结果过长，已截断；请基于以上信息作答，不要重复调用]"
+
+
+def truncate_tool_result(content, limit: int = TOOL_RESULT_MAX_CHARS):
+    """超长工具结果截断，防止撑爆模型上下文（小模型尤其敏感）。"""
+    if not isinstance(content, str) or len(content) <= limit:
+        return content
+    return content[:limit] + TRUNCATED_SUFFIX
+
+
+def count_tool_rounds(messages) -> int:
+    """统计已发生的工具调用轮数（一条带 tool_calls 的 AI 消息为一轮）。"""
+    return sum(
+        1
+        for msg in messages
+        if isinstance(msg, AIMessage) and getattr(msg, "tool_calls", None)
+    )
+
+
+async def limit_tool_rounds_core(request: ModelRequest, handler):
+    """单轮内工具调用轮数超限后摘除全部工具定义，强制模型基于已有信息作答。"""
+    if request.tools and count_tool_rounds(request.state["messages"]) >= MAX_TOOL_ROUNDS:
+        logger.warning(
+            "[tool loop guard]工具调用已达 %d 轮上限，本轮强制模型直接作答",
+            MAX_TOOL_ROUNDS,
+        )
+        request = request.override(tools=[])
+    return await handler(request)
+
+
+limit_tool_rounds = wrap_model_call(limit_tool_rounds_core)
 
 
 @wrap_tool_call
@@ -110,6 +117,9 @@ async def monitor_tool(
             "get_usage_report_data",
         }:
             request.runtime.context["report"] = True
+
+        if isinstance(result, ToolMessage):
+            result.content = truncate_tool_result(result.content)
 
         return result
     except Exception as e:

@@ -1,10 +1,10 @@
 # TS Agent 智能客服
 
-基于 LangGraph、DeepSeek、DashScope Embedding、Chroma 的智能客服示例，包含选购咨询、售后处理、RAG 知识检索、人工审批和长期记忆。
+基于 LangGraph、DeepSeek、DashScope Embedding、Chroma 的智能客服示例，包含选购咨询、售后处理、RAG 知识检索和长期记忆。
 项目采用服务端/客户端架构：FastAPI 服务端持有共享 Agent 并通过 SSE 流式推送回答与进度事件，Streamlit 作为客户端负责渲染。
 模型、子 Agent、MCP 工具、流式输出和 SQLite 持久化使用原生异步调用链。
 回答支持 Token 级流式展示和节点/工具进度事件；外部比价 MCP 仅在真正调用价格工具时延迟连接。
-下单、售后工单和退货申请具有参数校验、显式审批状态和线程级幂等写入保护。
+售后工单创建具有参数校验和线程级幂等写入保护。
 
 ## 架构
 
@@ -61,6 +61,17 @@ uv sync
 `config/mcp.yml`。仓库保留 `dist/` 作为可直接运行的第三方构建产物；更新该目录时，应同时核对
 `package.json`、`package-lock.json` 和上游版本。
 
+首次使用前需要安装 MCP 的 Node 依赖（`dotenv` 等，该目录不随 Git 提交）：
+
+```bash
+cd src/ts_agent/vendor/taoke-mcp-main && npm install --omit=dev
+```
+
+MCP 服务端暴露约 31 个工具，项目通过白名单只加载比价所需的 `jd.goods.query` 与
+`pdd.goods.search`（可用 `MCP_PRICE_COMPARE_TOOL_WHITELIST` 覆盖）。无需账号凭证即可
+使用拼多多侧工具；京东侧工具需要 在 `config/mcp.yml` 填入 `JD_KEY`/`JD_PID`，否则该平台
+返回不可用，模型会按提示词规则以 `web_search` 兜底。
+
 如果本地不需要外部 MCP，可在启动前禁用：
 
 ```bash
@@ -74,14 +85,22 @@ src/ts_agent/          主图、子 Agent、RAG、工具、Prompt 和内置 MCP
 src/ts_agent/server/   FastAPI 服务端（SSE 流式 API）
 config/                模型、RAG、Prompt 路径和 MCP 外部配置
 data/                  知识文档与本地运行数据
+evals/                 100 条确定性 benchmark（路由/工具纪律/售后流程/HITL/安全）
+sft/                   智谱 GLM 采样的 SFT 对话数据集（与 benchmark 不重叠）
 tests/                 不依赖真实模型请求的测试
 app.py                 Streamlit 客户端入口
 ```
 
+## 数据资产：benchmark 与 SFT
+
+- `evals/`：100 条端到端确定性评测（意图路由、比价工具纪律、排障、建单 HITL、
+  安全与健壮性），运行方式见 `evals/README.md`；换模型、改提示词前后各跑一遍做对比。
+- `sft/`：用智谱 GLM 采样的对话 SFT 数据集，用户输入经指纹去重保证与 benchmark
+  不重叠；system 提示词直接复用线上 prompt。构建方式见 `sft/README.md`。
+
 ## 工作流与记忆
 
-- 主图在意图识别前先检查待审批动作，“确认执行”会直接恢复正确的子 Agent。
-- 审批动作使用 `awaiting_review -> executing -> completed/failed` 状态机，失败时保留恢复信息。
+- 主图按意图路由到对应子 Agent，每轮使用全新子线程，工具中间产物不污染主会话。
 - 比价和使用报告由确定性组合工具保证调用顺序，不依赖模型自行编排关键步骤。
 - 长期记忆分为结构化用户画像和业务事件，包含来源、可信度、敏感级别和有效期。
 - 长期记忆按用户 ID 隔离；在客户端侧边栏修改"用户 ID"即可切换身份（会自动开启新会话）。
@@ -119,4 +138,4 @@ CI 会在 Python 3.10、3.11 和 3.12 上运行同样的检查。
 - 不要提交 `.env` 或真实 API Key。
 - 工具日志默认只记录参数字段名，不记录手机号、姓名或地址。
 - 设置 `TS_LOG_MESSAGE_CONTENT=1` 才会记录模型输入预览，仅建议本地调试使用。
-- 工单、订单、退货、长期记忆和向量索引默认保存在 `data/`，属于本地数据。
+- 工单、长期记忆和向量索引默认保存在 `data/`，属于本地数据。

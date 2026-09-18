@@ -4,7 +4,6 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
 from langchain_core.embeddings import DeterministicFakeEmbedding
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
@@ -162,29 +161,13 @@ class SummarizeBoundaryTests(unittest.IsolatedAsyncioTestCase):
 
 
 class RecordingChildAgent:
-    """记录每次调用的子线程 id，可选在首次调用返回 interrupt。"""
+    """记录每次调用的子线程 id。"""
 
-    def __init__(self, *, interrupt_first: bool = False) -> None:
-        self.interrupt_first = interrupt_first
+    def __init__(self) -> None:
         self.thread_ids: list[str] = []
 
     async def ainvoke(self, _payload, *, context, config):
         self.thread_ids.append(str(config["configurable"]["thread_id"]))
-        if self.interrupt_first and len(self.thread_ids) == 1:
-            return {
-                "__interrupt__": [
-                    SimpleNamespace(
-                        value={
-                            "action_requests": [
-                                {
-                                    "name": "create_purchase_order",
-                                    "args": {"product_model": "X1"},
-                                }
-                            ]
-                        }
-                    )
-                ]
-            }
         return {"messages": [AIMessage(content="好的")]}
 
 
@@ -212,65 +195,6 @@ class SubThreadIsolationTests(unittest.IsolatedAsyncioTestCase):
                     self.assertTrue(thread_id.startswith("iso-main:purchase:"))
             finally:
                 await agent.close()
-
-    async def test_pending_review_records_and_resumes_child_thread(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            backends = await build_persistent_backends(Path(directory))
-            agent = MainGraphAgent(backends, router_model=AsyncRouterModel())
-            child = RecordingChildAgent(interrupt_first=True)
-            agent.purchase_agent = child
-            config = {"configurable": {"thread_id": "hitl-main", "user_id": "user"}}
-            try:
-                first = await agent._purchase_node(
-                    {
-                        "recent_messages": [HumanMessage(content="帮我下单")],
-                        "summary": "",
-                    },
-                    config,
-                )
-                self.assertIn("人工确认", first["response"])
-                pending = await agent._get_pending_review("purchase", "hitl-main:purchase")
-                self.assertIsNotNone(pending)
-                self.assertEqual(pending["sub_thread_id"], child.thread_ids[0])
-
-                second = await agent._purchase_node(
-                    {
-                        "recent_messages": [HumanMessage(content="确认执行")],
-                        "summary": "",
-                    },
-                    config,
-                )
-                self.assertEqual(second["response"], "好的")
-                # 恢复轮必须复用中断时的子线程
-                self.assertEqual(child.thread_ids[1], child.thread_ids[0])
-                self.assertIsNone(
-                    await agent._get_pending_review("purchase", "hitl-main:purchase")
-                )
-            finally:
-                await agent.close()
-
-
-class RoutingTests(unittest.TestCase):
-    def test_sensitive_action_decisions(self) -> None:
-        self.assertEqual(
-            MainGraphAgent._parse_ticket_review_decision("确认执行"),
-            {"type": "approve"},
-        )
-        self.assertEqual(
-            MainGraphAgent._parse_ticket_review_decision("暂不执行"),
-            {"type": "reject", "message": "用户暂不执行敏感售后操作，继续在线处理。"},
-        )
-        self.assertIsNone(MainGraphAgent._parse_ticket_review_decision("再考虑一下"))
-
-    def test_pending_action_is_stored_as_structured_state(self) -> None:
-        state = MainGraphAgent._build_review_state(
-            [{"name": "create_purchase_order", "args": {"product_model": "X1"}}]
-        )
-        self.assertEqual(state["status"], "awaiting_review")
-        self.assertEqual(state["count"], 1)
-        self.assertEqual(state["tools"], ["create_purchase_order"])
-        self.assertEqual(state["actions"][0]["args"]["product_model"], "X1")
-
 
 class FileDiscoveryTests(unittest.TestCase):
     def test_missing_directory_returns_no_files(self) -> None:
